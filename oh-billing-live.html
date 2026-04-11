@@ -1046,7 +1046,14 @@ function quickStatus(num, newStatus) {
   p.pst = newStatus;
   rManage();
   rDash();
-  toast(`✓ פרויקט ${p.name} — ${action}`, 't-ok');
+  // Sync status to SharePoint
+  if(p._id) {
+    spPatch('OH-Projects', p._id, { field_7: newStatus })
+      .then(()=>toast(`✓ פרויקט ${p.name} — ${action} (SharePoint עודכן)`, 't-ok'))
+      .catch(()=>toast(`✓ ${p.name} — ${action} (מקומית)`, 't-warn'));
+  } else {
+    toast(`✓ פרויקט ${p.name} — ${action}`, 't-ok');
+  }
 }
 
 function openAddProject() {
@@ -1125,23 +1132,80 @@ function saveProjModal() {
   if(!hours||hours<=0){ toast('תקציב שעות חוזי חובה','t-err'); return; }
 
   if(editingProjNum) {
-    // Edit existing
+    // Edit existing — update local state
     const p = PROJECTS.find(p=>p.num===editingProjNum);
     if(p){
       p.name=name; p.lead=lead; p.client=client;
       p.contract=contract; p.contractHours=hours; p.avg=Math.round(contract/12); p.pst=pst;
       RATES[parseInt(num)] = rate;
+      // Sync to SharePoint
+      if(p._id) {
+        spPatch('OH-Projects', p._id, {
+          field_1: name,
+          field_2: client,
+          field_3: lead,
+          field_4: rate,
+          field_5: contract,
+          field_7: pst,
+          ContractHours: hours,
+        }).then(()=>toast('✓ פרויקט עודכן ב-SharePoint — '+name,'t-ok'))
+          .catch(e=>{ console.warn('SP update failed:',e); toast('✓ עודכן מקומית (SP נכשל)','t-warn'); });
+      } else {
+        toast('✓ פרויקט עודכן — '+name,'t-ok');
+      }
     }
-    toast('✓ פרויקט עודכן — '+name,'t-ok');
   } else {
-    // Add new
+    // Add new project
     if(PROJECTS.find(p=>p.num===num)){ toast('מספר פרויקט כבר קיים','t-err'); return; }
-    PROJECTS.push({num,name,client,lead,contract,billed:0,avg:Math.round(contract/12),pst,contractHours:hours});
-    RATES[parseInt(num)] = rate;
-    // Add invoice placeholder for current month
-    const newId = Math.max(...INVOICES.map(i=>i.id))+1;
-    INVOICES.push({id:newId,num:parseInt(num),name,client,lead,h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''});
-    toast('✓ פרויקט חדש נוסף — '+name,'t-ok');
+    // First add to SharePoint, then update local state
+    const spBody = {
+      Title: num,
+      field_1: name,
+      field_2: client,
+      field_3: lead,
+      field_4: rate,
+      field_5: contract,
+      field_6: 0,
+      field_7: pst,
+      ContractHours: hours,
+    };
+    toast('שומר פרויקט ב-SharePoint...','t-info');
+    spPost('OH-Projects', spBody)
+      .then(newItem => {
+        const _id = newItem.Id || newItem.id;
+        PROJECTS.push({num,name,client,lead,contract,billed:0,avg:Math.round(contract/12),pst,contractHours:hours,_id});
+        RATES[parseInt(num)] = rate;
+        // Add invoice placeholder for current month
+        const curMonth = new Date().toISOString().slice(0,7);
+        const invBody = {
+          Title: num,
+          field_1: name,
+          field_2: client,
+          field_3: lead,
+          field_4: curMonth,
+          field_11: 'ממתין לדוח שעות',
+        };
+        return spPost('OH-MonthlyInvoices', invBody).then(newInv => {
+          const newId = Math.max(...INVOICES.map(i=>i.id))+1;
+          INVOICES.push({id:newId,_id:newInv.Id||newInv.id,num:parseInt(num),name,client,lead,
+            h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''});
+          toast('✓ פרויקט חדש נוסף ב-SharePoint — '+name,'t-ok');
+          rManage(); rDash();
+        });
+      })
+      .catch(e => {
+        console.warn('SP post failed:', e);
+        // Fallback: add locally only
+        PROJECTS.push({num,name,client,lead,contract,billed:0,avg:Math.round(contract/12),pst,contractHours:hours});
+        RATES[parseInt(num)] = rate;
+        const newId = Math.max(...INVOICES.map(i=>i.id))+1;
+        INVOICES.push({id:newId,num:parseInt(num),name,client,lead,h:[null,null,null,null],
+          status:0,notes:['','','',''],files:[],retNotes:'',retBy:''});
+        toast('⚠ נוסף מקומית בלבד (SharePoint נכשל)','t-warn');
+        rManage(); rDash();
+      });
+    closeProjModal();
+    return; // async — return early, toast/refresh handled in promise
   }
   closeProjModal();
   rManage();
@@ -1153,13 +1217,25 @@ function deleteProject() {
   if(!editingProjNum) return;
   const p = PROJECTS.find(p=>p.num===editingProjNum);
   if(!p) return;
-  if(!confirm('האם למחוק את הפרויקט ' + p.name + '? פעולה זו בלתי הפיכה.')) return;
+  if(!confirm('האם למחוק את הפרויקט ' + p.name + '? פעולה זו בלתי הפיכה גם ב-SharePoint.')) return;
   const idx = PROJECTS.indexOf(p);
   PROJECTS.splice(idx,1);
   closeProjModal();
   rManage();
   rDash();
-  toast('פרויקט נמחק — '+p.name,'t-warn');
+  // Delete from SharePoint
+  if(p._id) {
+    getToken(SP_SCOPES).then(tok =>
+      fetch(SP_CFG.siteUrl+"/_api/web/lists/getbytitle('OH-Projects')/items("+p._id+")", {
+        method:"POST",
+        headers:{ Authorization:"Bearer "+tok, "X-HTTP-Method":"DELETE", "IF-MATCH":"*",
+                  Accept:"application/json;odata=nometadata" }
+      })
+    ).then(()=>toast('פרויקט נמחק מ-SharePoint — '+p.name,'t-warn'))
+     .catch(()=>toast('נמחק מקומית (SP נכשל) — '+p.name,'t-warn'));
+  } else {
+    toast('פרויקט נמחק — '+p.name,'t-warn');
+  }
 }
 
 function closeProjModal() {
