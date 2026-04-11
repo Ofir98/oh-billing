@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OH — מערכת חשבונות שעתיים v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1018;--sur:#141922;--sur2:#1b2233;--sur3:#222d42;
+  --bdr:#263044;--bdr2:#2e3d58;
+  --acc:#3d6fff;--acc2:#00d4a8;--acc3:#a78bfa;
+  --txt:#dde3f0;--txt2:#7d8fab;--txt3:#3f4f6a;
+  --s0-bg:#111e3a;--s0-fg:#5b80ff;
+  --s1-bg:#13211a;--s1-fg:#3dd68c;
+  --s2-bg:#1e1a0e;--s2-fg:#f0a43a;
+  --s3-bg:#1a112a;--s3-fg:#b07ff0;
+  --s4-bg:#0d1f16;--s4-fg:#00c49a;
+  --s5-bg:#1e1214;--s5-fg:#ff6b7a;
+  --red:#ff4b5c;--amber:#f0a43a;--green:#00d4a8;
+  --r:9px;--mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--txt);font-family:'Heebo',sans-serif;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:var(--sur);border-bottom:1px solid var(--bdr);padding:0 26px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-box{width:30px;height:30px;background:var(--acc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;color:#fff;}
+.logo-txt{font-size:13px;font-weight:600;}
+.logo-sub{font-size:10px;color:var(--txt3);}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+.msel{background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:4px 9px;color:var(--txt2);font-family:'Heebo',sans-serif;font-size:11px;cursor:pointer;}
+.usr-btn{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:16px;border:1px solid var(--bdr);background:var(--sur2);cursor:pointer;font-size:11px;transition:all .12s;}
+.usr-btn:hover{border-color:var(--acc);color:var(--acc);}
+.udot{width:7px;height:7px;border-radius:50%;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 56px);}
+.sidebar{background:var(--sur);border-left:1px solid var(--bdr);padding:14px 0;}
+.slbl{padding:5px 16px;font-size:9px;font-weight:700;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;}
+.nitem{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;font-size:12px;color:var(--txt2);border-right:2px solid transparent;transition:all .11s;}
+.nitem:hover{background:var(--sur2);color:var(--txt);}
+.nitem.active{background:var(--sur2);color:var(--acc);border-right-color:var(--acc);}
+.nico{font-size:13px;width:16px;text-align:center;}
+.nbadge{margin-right:auto;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:700;}
+.nbadge-red{background:var(--red);color:#fff;}
+.nbadge-grn{background:var(--s4-bg);color:var(--s4-fg);}
+
+/* MAIN */
+.main{padding:22px 26px;overflow-y:auto;}
+.page{display:none;}.page.active{display:block;}
+
+/* METRICS */
+.mets{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.met{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 15px;position:relative;overflow:hidden;}
+.met::before{content:'';position:absolute;top:0;right:0;left:0;height:2px;}
+.met-b::before{background:var(--acc);}
+.met-g::before{background:var(--acc2);}
+.met-a::before{background:var(--amber);}
+.met-p::before{background:var(--acc3);}
+.met-r::before{background:var(--red);}
+.mlbl{font-size:9px;color:var(--txt2);margin-bottom:5px;letter-spacing:.03em;}
+.mval{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1;}
+.met-b .mval{color:var(--acc);}
+.met-g .mval{color:var(--acc2);}
+.met-a .mval{color:var(--amber);}
+.met-p .mval{color:var(--acc3);}
+.met-r .mval{color:var(--red);}
+.msub{font-size:9px;color:var(--txt3);margin-top:4px;}
+
+/* ALERTS */
+.alert{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:7px;margin-bottom:12px;font-size:11px;}
+.al-warn{background:#1e1809;border:1px solid var(--amber)33;color:var(--amber);}
+.al-info{background:#0e1930;border:1px solid var(--acc)33;color:#6b8aff;}
+.al-ok{background:#091510;border:1px solid var(--acc2)33;color:var(--acc2);}
+.al-err{background:#160a0d;border:1px solid var(--red)33;color:var(--red);}
+.al-ico{font-size:14px;flex-shrink:0;}
+.al-txt{flex:1;}
+.al-btn{padding:2px 9px;border-radius:4px;border:1px solid currentColor;background:transparent;color:inherit;font-size:10px;cursor:pointer;font-family:'Heebo',sans-serif;}
+
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.stitle{font-size:13px;font-weight:500;}
+.filters{display:flex;gap:5px;}
+.fb{padding:3px 10px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--bdr);background:transparent;color:var(--txt2);font-family:'Heebo',sans-serif;transition:all .11s;}
+.fb:hover{border-color:var(--acc);color:var(--acc);}
+.fb.active{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+/* TABLE */
+.tw{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead{background:var(--sur2);}
+th{padding:8px 11px;text-align:right;font-size:9px;font-weight:600;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--bdr);white-space:nowrap;}
+td{padding:9px 11px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#ffffff03;}
+.pn{font-weight:500;font-size:12px;}
+.pm{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:1px;}
+.chip{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;background:var(--sur2);color:var(--txt2);border:1px solid var(--bdr);}
+.mono{font-family:var(--mono);}
+.amt{font-family:var(--mono);color:var(--acc2);font-size:11px;}
+
+/* STATUS BADGE */
+.st{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:500;white-space:nowrap;}
+.st::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.st0{background:var(--s0-bg);color:var(--s0-fg);}.st0::before{background:var(--s0-fg);}
+.st1{background:var(--s1-bg);color:var(--s1-fg);}.st1::before{background:var(--s1-fg);animation:p 1.4s infinite;}
+.st2{background:var(--s2-bg);color:var(--s2-fg);}.st2::before{background:var(--s2-fg);animation:p 1.4s infinite;}
+.st3{background:var(--s3-bg);color:var(--s3-fg);}.st3::before{background:var(--s3-fg);animation:p 1.4s infinite;}
+.st4{background:var(--s4-bg);color:var(--s4-fg);}.st4::before{background:var(--s4-fg);}
+.st5{background:var(--s5-bg);color:var(--s5-fg);}.st5::before{background:var(--s5-fg);}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* FLAG */
+.flag-red{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:3px;background:#1a0810;border:1px solid var(--red)44;color:var(--red);font-size:9px;font-weight:600;}
+.flag-amber{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:3px;background:#1a1008;border:1px solid var(--amber)44;color:var(--amber);font-size:9px;font-weight:600;}
+
+/* BUTTONS */
+.btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:500;cursor:pointer;border:none;font-family:'Heebo',sans-serif;transition:all .12s;white-space:nowrap;}
+.btn-acc{background:var(--acc);color:#fff;}.btn-acc:hover{background:#2d5ae0;}
+.btn-grn{background:var(--s1-bg);color:var(--s1-fg);}.btn-grn:hover{background:#1d3528;}
+.btn-pur{background:var(--s3-bg);color:var(--s3-fg);}.btn-pur:hover{background:#25153a;}
+.btn-send{background:var(--s4-bg);color:var(--s4-fg);}.btn-send:hover{background:#122e1e;}
+.btn-ret{background:#160a0d;color:var(--red);}.btn-ret:hover{background:#200e12;}
+.btn-gh{background:var(--sur2);color:var(--txt2);}.btn-gh:hover{color:var(--txt);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* PROGRESS BAR */
+.pb-bg{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden;margin-top:3px;}
+.pb-fill{height:100%;border-radius:2px;transition:width .3s;}
+.pb-ok{background:var(--acc2);}
+.pb-warn{background:var(--amber);}
+.pb-danger{background:var(--red);}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:#00000095;z-index:200;align-items:flex-start;justify-content:center;padding-top:40px;}
+.ov.open{display:flex;}
+.modal{background:var(--sur);border:1px solid var(--bdr2);border-radius:13px;width:680px;max-width:96vw;max-height:88vh;overflow-y:auto;animation:su .16s ease;}
+@keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhdr{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+.mtitle{font-size:14px;font-weight:600;}
+.mclose{width:26px;height:26px;border-radius:5px;border:none;background:var(--sur2);color:var(--txt2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.mbody{padding:16px 20px;}
+.mfoot{padding:0 20px 16px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.dvd{height:1px;background:var(--bdr);margin:12px 0;}
+.fr{margin-bottom:12px;}
+.fl{font-size:10px;color:var(--txt2);margin-bottom:4px;font-weight:500;}
+.fi{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:7px 9px;color:var(--txt);font-family:'Heebo',sans-serif;font-size:11px;transition:border-color .14s;}
+.fi:focus{outline:none;border-color:var(--acc);}
+textarea.fi{min-height:65px;resize:vertical;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* STEP PROGRESS */
+.steps{display:flex;gap:0;margin-bottom:14px;}
+.step{flex:1;text-align:center;padding:7px 4px 6px;border-bottom:2px solid var(--bdr);font-size:9px;color:var(--txt3);transition:all .15s;}
+.step.done{border-bottom-color:var(--acc2);color:var(--acc2);}
+.step.active{border-bottom-color:var(--acc);color:var(--acc);font-weight:600;}
+.step.rejected{border-bottom-color:var(--red);color:var(--red);}
+
+/* VERSION HISTORY */
+.verlist{display:grid;gap:8px;margin-bottom:12px;}
+.ver-item{background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;display:flex;align-items:flex-start;gap:10px;}
+.ver-num{font-family:var(--mono);font-size:9px;color:var(--txt3);flex-shrink:0;margin-top:2px;}
+.ver-info{flex:1;}
+.ver-by{font-size:11px;font-weight:500;}
+.ver-date{font-size:9px;color:var(--txt3);}
+.ver-note{font-size:10px;color:var(--txt2);margin-top:3px;font-style:italic;}
+.ver-actions{display:flex;gap:5px;align-items:center;}
+
+/* HOURS TABLE in modal */
+.htable{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;}
+.htable th{padding:5px 8px;background:var(--sur3);text-align:right;font-size:9px;color:var(--txt2);border:1px solid var(--bdr);}
+.htable td{padding:6px 8px;border:1px solid var(--bdr);font-family:var(--mono);}
+.htable tr.total-row td{background:var(--sur3);font-weight:600;color:var(--acc2);}
+
+/* UPLOAD ZONE */
+.upz{background:var(--sur);border:2px dashed var(--bdr);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:all .18s;margin-bottom:18px;}
+.upz:hover{border-color:var(--acc);background:#111e30;}
+.upz-ico{font-size:28px;margin-bottom:8px;}
+.upz-t{font-size:13px;font-weight:500;margin-bottom:4px;}
+.upz-s{font-size:10px;color:var(--txt2);}
+.upz-fmt{display:inline-block;margin-top:8px;padding:2px 9px;background:var(--sur2);border:1px solid var(--bdr);border-radius:3px;font-family:var(--mono);font-size:9px;color:var(--txt3);}
+input[type=file]{display:none;}
+
+/* HOUR INPUT */
+.hi{background:var(--sur2);border:1px solid var(--bdr);border-radius:4px;padding:4px 6px;color:var(--txt);font-family:var(--mono);font-size:11px;width:100%;text-align:center;transition:border-color .13s;}
+.hi:focus{outline:none;border-color:var(--acc);}
+.hl{font-size:8px;color:var(--txt3);text-align:center;margin-bottom:2px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:14px;}
+.tab{padding:7px 12px;font-size:11px;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .11s;}
+.tab:hover{color:var(--txt);}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc);}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:9px 16px;font-size:11px;z-index:999;transition:transform .22s ease;display:flex;align-items:center;gap:8px;box-shadow:0 5px 20px #00000060;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.t-ok{border-color:var(--acc2);color:var(--acc2);}
+.toast.t-err{border-color:var(--red);color:var(--red);}
+.toast.t-info{border-color:var(--acc);color:var(--acc);}
+.toast.t-warn{border-color:var(--amber);color:var(--amber);}
+
+.sep{height:1px;background:var(--bdr);margin:14px 0;}
+.tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:9px;font-weight:600;}
+.tag-eco{background:#12102a;color:#a78bfa;}
+.tag-lead{background:#0a1825;color:#38bdf8;}
+.tag-mgr{background:#0a1f15;color:#4ade80;}
+.tag-ret{background:#160a0d;color:var(--red);}
+
+/* RETURN INDICATOR */
+.ret-banner{background:#160a0d;border:1px solid var(--red)33;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:10px;color:var(--red);display:flex;align-items:flex-start;gap:8px;}
+.ret-ico{font-size:13px;flex-shrink:0;}
+
+.rv-hdr{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.rv-back{padding:5px 12px;border-radius:5px;border:1px solid var(--bdr);background:transparent;color:var(--txt2);font-family:'Heebo',sans-serif;font-size:11px;cursor:pointer;}
+.rv-back:hover{color:var(--txt);}
+.rv-title{font-size:16px;font-weight:600;}
+.rv-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.rv-grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;}
+.rv-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;}
+.rv-card-hdr{background:var(--sur2);padding:10px 14px;border-bottom:1px solid var(--bdr);font-size:11px;font-weight:600;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase;}
+.rv-card-body{padding:14px;}
+.rv-field{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bdr);}
+.rv-field:last-child{border-bottom:none;}
+.rv-flbl{font-size:10px;color:var(--txt2);}
+.rv-fval{font-size:12px;font-weight:500;}
+.rv-htable{width:100%;border-collapse:collapse;font-size:11px;}
+.rv-htable th{padding:7px 10px;background:var(--sur2);text-align:right;font-size:9px;color:var(--txt2);border-bottom:1px solid var(--bdr);border-left:1px solid var(--bdr);}
+.rv-htable th:last-child{border-left:none;}
+.rv-htable td{padding:8px 10px;border-bottom:1px solid var(--bdr);border-left:1px solid var(--bdr);font-family:var(--mono);}
+.rv-htable td:last-child{border-left:none;}
+.rv-htable tr.rv-total td{background:var(--sur2);font-weight:600;color:var(--acc2);}
+.rv-htable tr:hover td{background:#ffffff03;}
+.rv-ver{background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;}
+.rv-ver:last-child{margin-bottom:0;}
+.rv-vnum{font-family:var(--mono);font-size:9px;color:var(--txt3);flex-shrink:0;margin-top:2px;}
+.rv-vinfo{flex:1;}
+.rv-vname{font-size:11px;font-weight:500;}
+.rv-vdate{font-size:9px;color:var(--txt3);margin-top:1px;}
+.rv-vnote{font-size:10px;color:var(--txt2);margin-top:3px;font-style:italic;}
+.rv-vbtns{display:flex;gap:5px;flex-shrink:0;}
+.rv-action-bar{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 16px;margin-top:16px;display:flex;align-items:flex-start;gap:14px;}
+.rv-action-bar textarea{flex:1;background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:8px 10px;color:var(--txt);font-family:'Heebo',sans-serif;font-size:11px;resize:none;min-height:60px;}
+.rv-action-bar textarea:focus{outline:none;border-color:var(--acc);}
+.rv-action-btns{display:flex;flex-direction:column;gap:7px;flex-shrink:0;min-width:160px;}
+.rv-note-history{margin-top:12px;}
+.rv-note-item{background:var(--sur2);border-right:2px solid var(--bdr2);padding:7px 10px;margin-bottom:6px;border-radius:0 5px 5px 0;}
+.rv-note-by{font-size:9px;color:var(--txt3);margin-bottom:2px;}
+.rv-note-txt{font-size:11px;color:var(--txt2);}
+.rv-ret-banner{background:#160a0d;border:1px solid var(--red)44;border-radius:6px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;}
+.rv-ret-ico{font-size:16px;flex-shrink:0;}
+.rv-ret-txt{flex:1;}
+.rv-ret-by{font-size:10px;font-weight:600;color:var(--red);margin-bottom:3px;}
+.rv-ret-note{font-size:11px;color:var(--s5-fg);line-height:1.6;}
+
+.proj-cards{display:grid;gap:12px;}
+.proj-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;transition:border-color .15s;}
+.proj-card.pc-returned{border-color:var(--red)55;}
+.proj-card.pc-submitted{opacity:.7;}
+.pc-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--bdr);cursor:pointer;user-select:none;}
+.pc-hdr:hover{background:var(--sur2);}
+.pc-chevron{font-size:10px;color:var(--txt3);transition:transform .2s;flex-shrink:0;}
+.pc-chevron.open{transform:rotate(90deg);}
+.pc-hdr-info{flex:1;}
+.pc-name{font-size:13px;font-weight:500;}
+.pc-meta{font-size:10px;color:var(--txt2);margin-top:1px;}
+.pc-hdr-right{display:flex;align-items:center;gap:8px;}
+.pc-body{display:none;padding:14px;}
+.pc-body.open{display:block;}
+.pc-section{margin-bottom:14px;}
+.pc-slbl{font-size:9px;font-weight:700;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;}
+.pc-upzone{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--sur2);border:1px dashed var(--bdr);border-radius:6px;cursor:pointer;font-size:11px;color:var(--txt2);transition:border-color .15s;}
+.pc-upzone:hover{border-color:var(--acc);color:var(--acc);}
+.pc-file{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;margin-bottom:5px;}
+.pc-fname{flex:1;font-size:11px;}
+.pc-fmeta{font-size:9px;color:var(--txt3);}
+.pc-hours-grid{display:grid;grid-template-columns:repeat(4,1fr) auto auto;gap:8px;align-items:end;}
+.pc-hlbl{font-size:9px;color:var(--txt3);text-align:center;margin-bottom:3px;}
+.pc-total-box{background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:6px 8px;text-align:center;}
+.pc-total-lbl{font-size:8px;color:var(--txt3);}
+.pc-total-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--acc2);}
+.pc-amount-box{background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:6px 8px;text-align:center;}
+.pc-amount-lbl{font-size:8px;color:var(--txt3);}
+.pc-amount-val{font-family:var(--mono);font-size:11px;color:var(--acc2);}
+.pc-notes{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:5px;padding:7px 9px;color:var(--txt);font-family:'Heebo',sans-serif;font-size:11px;resize:none;min-height:50px;margin-top:6px;}
+.pc-notes:focus{outline:none;border-color:var(--acc);}
+.pc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--bdr);}
+.pc-ret-note{background:#160a0d;border:1px solid var(--red)33;border-radius:5px;padding:7px 10px;margin-bottom:10px;font-size:10px;}
+.pc-ret-lbl{color:var(--red);font-weight:600;margin-bottom:2px;}
+.pc-ret-txt{color:var(--s5-fg);line-height:1.6;}
+
+.lo{position:fixed;inset:0;background:#0d1018;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.ls{width:44px;height:44px;border:3px solid #2a3245;border-top-color:#3d6fff;border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.lt{font-size:13px;color:#8892aa;font-family:Heebo,sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="lo" id="lo"><div class="ls"></div><div class="lt" id="lmsg">מתחבר...</div></div>
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-box">OH</div>
+    <div>
+      <div class="logo-txt">מערכת חשבונות שעתיים</div>
+      <div class="logo-sub">OH תכנון תחבורה</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <select class="msel" onchange="chMonth(this.value)">
+      <option value="2026-03" selected>מרץ 2026</option>
+      <option value="2026-04">אפריל 2026</option>
+      <option value="2026-02">פברואר 2026</option>
+    </select>
+    <div class="usr-btn" onclick="cycleUser()">
+      <div class="udot" id="udot" style="background:#a78bfa"></div>
+      <span id="ulbl">כלכלנית</span>
+      <span style="color:var(--txt3);font-size:9px">▾ החלף</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="slbl">ראשי</div>
+  <div class="nitem active" onclick="gp('dashboard')"><span class="nico">⊞</span>דשבורד</div>
+  <div class="nitem" onclick="gp('invoices')"><span class="nico">◈</span>חשבונות חודש<span class="nbadge nbadge-red" id="nb">0</span></div>
+  <div class="nitem" onclick="gp('submit')"><span class="nico">↑</span>הגשת דוחות שעות</div>
+  <div class="slbl" style="margin-top:8px">נתונים</div>
+  <div class="nitem" onclick="gp('projects')"><span class="nico">◎</span>פרויקטים</div>
+  <div class="nitem" onclick="gp('flow')"><span class="nico">→</span>תהליך אישור</div>
+  <div class="nitem" onclick="gp('manage')" id="manageNav"><span class="nico">✦</span>ניהול פרויקטים</div>
+  <div class="nitem" id="reviewNav" style="display:none" onclick="gp('review')"><span class="nico">◉</span><span id="reviewNavTxt">סקירת חשבון</span></div>
+</nav>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div id="alerts"></div>
+  <div class="mets" id="mets"></div>
+  <div class="sh">
+    <div class="stitle">חשבונות מרץ 2026</div>
+    <div class="filters">
+      <button class="fb active" onclick="fd('all',this)">הכל</button>
+      <button class="fb" onclick="fd('אלון',this)">אלון</button>
+      <button class="fb" onclick="fd('סיון',this)">סיון</button>
+      <button class="fb" onclick="fd('אופיר',this)">אופיר</button>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>פרויקט</th><th>לקוח</th><th>ראש"צ</th><th>שעות</th><th>סכום</th><th>יתרה</th><th>סטטוס</th><th>קובץ</th><th>פעולה</th></tr></thead>
+    <tbody id="dtb"></tbody>
+  </table></div>
+</div>
+
+<!-- INVOICES -->
+<div class="page" id="page-invoices">
+  <div class="tabs">
+    <div class="tab active" onclick="st(this,'all')">כל החשבונות</div>
+    <div class="tab" onclick="st(this,'mine')">ממתינים לי</div>
+    <div class="tab" onclick="st(this,'ret')">הוחזרו לתיקון</div>
+    <div class="tab" onclick="st(this,'done')">הושלמו</div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>פרויקט</th><th>לקוח</th><th>ראש"צ</th><th>שעות</th><th>סכום</th><th>סטטוס</th><th>גרסה</th><th>הוחזר</th><th>פעולה</th></tr></thead>
+    <tbody id="itb"></tbody>
+  </table></div>
+</div>
+
+<!-- SUBMIT -->
+<div class="page" id="page-submit">
+  <div class="sh" style="margin-bottom:6px">
+    <div>
+      <div class="stitle">הגשת דוחות שעות — מרץ 2026</div>
+      <div style="font-size:10px;color:var(--txt2);margin-top:2px">כל פרויקט מוגש בנפרד — העלי Excel וסמני שעות, לאחר מכן לחצי "הגש לאישור"</div>
+    </div>
+    <div class="filters">
+      <button class="fb active" onclick="filterSubmit('all',this)">הכל</button>
+      <button class="fb" onclick="filterSubmit('open',this)">ממתינים להגשה</button>
+      <button class="fb" onclick="filterSubmit('returned',this)">הוחזרו לתיקון</button>
+      <button class="fb" onclick="filterSubmit('submitted',this)">הוגשו</button>
+    </div>
+  </div>
+  <div id="submitCards"></div>
+</div>
+
+
+<!-- MANAGE PROJECTS -->
+<div class="page" id="page-manage">
+  <div class="sh">
+    <div>
+      <div class="stitle">ניהול פרויקטים</div>
+      <div style="font-size:10px;color:var(--txt2);margin-top:2px">הוספה, עריכה, סגירה והקפאה — גישה לאופיר בלבד</div>
+    </div>
+    <button class="btn btn-acc" onclick="openAddProject()">+ הוסף פרויקט חדש</button>
+  </div>
+  <div class="tabs" id="manageTabs">
+    <div class="tab active" onclick="setManageTab(this,'active')">פעילים</div>
+    <div class="tab" onclick="setManageTab(this,'risk')">בסיכון</div>
+    <div class="tab" onclick="setManageTab(this,'frozen')">מוקפאים</div>
+    <div class="tab" onclick="setManageTab(this,'closed')">סגורים</div>
+  </div>
+  <div class="tw"><table id="manageTable">
+    <thead><tr>
+      <th>פרויקט</th><th>לקוח</th><th>ראש"צ</th>
+      <th>תעריף ₪/ש׳</th><th>תקציב שעות</th><th>שכ"ט</th>
+      <th>יתרה</th><th>% ניצול</th><th>סטטוס</th><th>פעולות</th>
+    </tr></thead>
+    <tbody id="manageTbody"></tbody>
+  </table></div>
+</div>
+
+<!-- REVIEW PAGE -->
+<div class="page" id="page-review">
+  <div id="rv-content"></div>
+</div>
+</main>
+</div>
+
+
+<!-- PROJECT MODAL -->
+<div class="ov" id="projModal">
+<div class="modal" style="width:540px">
+  <div class="mhdr">
+    <div class="mtitle" id="projModalTitle">פרויקט חדש</div>
+    <button class="mclose" onclick="closeProjModal()">✕</button>
+  </div>
+  <div class="mbody">
+    <div class="fgrid">
+      <div class="fr"><div class="fl">מספר פרויקט</div><input class="fi" id="pm-num" placeholder="למשל 1115"></div>
+      <div class="fr"><div class="fl">שם פרויקט</div><input class="fi" id="pm-name" placeholder="שם הפרויקט"></div>
+    </div>
+    <div class="fgrid">
+      <div class="fr"><div class="fl">לקוח</div>
+        <select class="fi" id="pm-client">
+          <option>נתיבי ישראל</option><option>חברת נתיבי אילון בע"מ</option>
+          <option>אשד ניהול והנדסה בע"מ</option><option>תוכנית אב ירושלים</option>
+          <option>עיריית תל אביב יפו</option><option>עיריית הרצליה</option>
+          <option>רכבת ישראל בע"מ</option><option>אחר</option>
+        </select>
+      </div>
+      <div class="fr"><div class="fl">ראש צוות</div>
+        <select class="fi" id="pm-lead">
+          <option>אלון גולדשטיין</option>
+          <option>סיון לב טנא</option>
+          <option>אופיר הילברט</option>
+        </select>
+      </div>
+    </div>
+    <div class="fgrid">
+      <div class="fr"><div class="fl">תעריף שעתי (₪)</div><input class="fi" id="pm-rate" type="number" placeholder="380" min="100" max="2000"></div>
+      <div class="fr"><div class="fl">תקציב שעות חוזי <span style="color:var(--red)">*</span></div><input class="fi" id="pm-hours" type="number" placeholder="500" min="1" required></div>
+    </div>
+    <div class="fgrid">
+      <div class="fr"><div class="fl">שכ"ט חוזי (₪) — מחושב אוטומטית</div><input class="fi" id="pm-contract" type="number" placeholder="190000" min="0" style="color:var(--acc2)"></div>
+      <div class="fr"><div class="fl">תאריך התחלה</div><input class="fi" id="pm-date" type="date"></div>
+    </div>
+    <div class="fr"><div class="fl">סטטוס</div>
+      <select class="fi" id="pm-status">
+        <option value="חי - פעיל">חי - פעיל</option>
+        <option value="בסיכון">בסיכון</option>
+        <option value="מוקפא">מוקפא</option>
+        <option value="סגור">סגור</option>
+      </select>
+    </div>
+    <div class="fr" id="closeReasonRow" style="display:none">
+      <div class="fl">סיבת סגירה / הקפאה</div>
+      <textarea class="fi" id="pm-reason" placeholder="תאר את הסיבה..." rows="2"></textarea>
+    </div>
+    <div class="fr"><div class="fl">הערות</div><textarea class="fi" id="pm-notes" placeholder="הערות נוספות..." rows="2"></textarea></div>
+  </div>
+  <div class="mfoot">
+    <button class="btn btn-acc" onclick="saveProjModal()">שמור פרויקט</button>
+    <button class="btn btn-gh" onclick="closeProjModal()">ביטול</button>
+    <button class="btn btn-ret" id="pm-delete-btn" style="display:none;margin-right:auto" onclick="deleteProject()">מחק פרויקט</button>
+  </div>
+</div>
+</div>
+
+<!-- MAIN MODAL -->
+<div class="ov" id="modal">
+<div class="modal">
+  <div class="mhdr">
+    <div class="mtitle" id="mt">פרטי חשבון</div>
+    <button class="mclose" onclick="cm()">✕</button>
+  </div>
+  <div class="mbody">
+    <div class="steps" id="msteps"></div>
+    <div id="retBanner"></div>
+    <div class="fgrid">
+      <div class="fr"><div class="fl">פרויקט</div><input class="fi" id="mn" readonly></div>
+      <div class="fr"><div class="fl">לקוח</div><input class="fi" id="mcl" readonly></div>
+    </div>
+    <div class="fgrid">
+      <div class="fr"><div class="fl">ראש צוות</div><input class="fi" id="ml" readonly></div>
+      <div class="fr"><div class="fl">תעריף שעתי</div><input class="fi" id="mrt" readonly style="font-family:var(--mono)"></div>
+    </div>
+    <div class="dvd"></div>
+
+    <!-- HOURS TABLE -->
+    <div class="fl" style="margin-bottom:6px">דוח שעות</div>
+    <table class="htable" id="mhtable">
+      <thead><tr><th>מתכנן 1</th><th>מתכנן 2</th><th>מתכנן 3</th><th>מתכנן 4</th><th>סה"כ שעות</th><th>סכום חשבון</th></tr></thead>
+      <tbody id="mhbody"></tbody>
+    </table>
+
+    <!-- FILE VERSIONS -->
+    <div class="fl" style="margin-bottom:6px">קבצי דוח שעות מצורפים</div>
+    <div id="mverlist" class="verlist"></div>
+    <div id="mupzone"></div>
+
+    <div class="dvd"></div>
+    <div class="fr">
+      <div class="fl" id="mnl">הערות</div>
+      <textarea class="fi" id="mnt" placeholder="הוסף הערה..."></textarea>
+    </div>
+    <div id="minfo" style="font-size:10px;color:var(--txt2);margin-top:5px"></div>
+  </div>
+  <div class="mfoot" id="mft"></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const RATES = {1037:390,1038:390,1041:370,1048:390,1054:390,1065:350,1067:380,1068:390,1071:370,1073:380,1074:390,1081:380,1082:380,1083:400,1084:380,1089:360,1096:390,1097:400,1098:400,1099:380,1100:390,1107:400,1109:350,1111:390,1112:380};
+
+// STATUS MACHINE:
+// 0 = ממתין לדוח שעות
+// 1 = הוגש לראש"צ (ממתין אישור ראש"צ)
+// 2 = הוחזר לכלכלנית ע"י ראש"צ (לתיקון)
+// 3 = אושר ע"י ראש"צ — ממתין לאופיר
+// 4 = הוחזר לכלכלנית ע"י אופיר (לתיקון — חוזר ישירות לאופיר)
+// 5 = אושר סופית ע"י אופיר — מוכן לשליחה
+// 6 = נשלח ללקוח (סגור)
+
+const SL = ['ממתין לדוח שעות','ממתין לאישור ראש"צ','הוחזר לתיקון ע"י ראש"צ','אושר ראש"צ — ממתין לאופיר','הוחזר לתיקון ע"י אופיר','אושר סופית — לשליחה','נשלח ללקוח'];
+const SC = ['st0','st1','st5','st2','st5','st3','st4'];
+
+// PROJECTS with budget tracking
+let PROJECTS = [
+  {num:'1041',name:'ספירות רוכבים',client:'אשד',lead:'אלון גולדשטיין',contract:713250,billed:191222,avg:9187,pst:'חי - פעיל',contractHours:1927},
+  {num:'1054',name:'נגישות מסופים',client:'נתיבי איילון',lead:'סיון לב טנא',contract:1406215,billed:793923,avg:4692,pst:'חי - פעיל',contractHours:3606},
+  {num:'1065',name:'חניון משאיות לילה',client:'נתיבי ישראל',lead:'סיון לב טנא',contract:546000,billed:187343,avg:8375,pst:'חי - פעיל',contractHours:1560},
+  {num:'1067',name:'נת"צים צתא"ל',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:283360,billed:207230,avg:19033,pst:'בסיכון'},
+  {num:'1068',name:'שמירת איילון',client:'נתיבי איילון',lead:'סיון לב טנא',contract:166128,billed:153948,avg:6090,pst:'בסיכון'},
+  {num:'1071',name:'מדריך תקני חנייה מקומיים',client:'אשד',lead:'סיון לב טנא',contract:634000,billed:358753,avg:12515,pst:'חי - פעיל'},
+  {num:'1073',name:'תוכנית גילה',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:230325,billed:53406,avg:19658,pst:'בסיכון'},
+  {num:'1074',name:'ניהול מודלים',client:'נתיבי איילון',lead:'אופיר הילברט',contract:99000,billed:70180,avg:28820,pst:'בסיכון'},
+  {num:'1081',name:'ניטור עומסים קווי ת"צ',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:313720,billed:311861,avg:930,pst:'בסיכון'},
+  {num:'1082',name:'ניתוח קווי ת"צ בינעירוניים',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:280784,billed:218841,avg:20648,pst:'בסיכון'},
+  {num:'1084',name:'אזורי מיתון תנועה ירושלים',client:'תוכנית אב ירושלים',lead:'אופיר הילברט',contract:365000,billed:282790,avg:20553,pst:'בסיכון'},
+  {num:'1089',name:'בדיקות משרד התחבורה',client:'אשד',lead:'סיון לב טנא',contract:385560,billed:332183,avg:31675,pst:'חי - פעיל',contractHours:1071},
+  {num:'1090',name:'תכנון תפעולי תא ומרכז',client:'נתיבי איילון',lead:'אלון גולדשטיין',contract:78750,billed:9655,avg:0,pst:'מוקפא'},
+  {num:'1096',name:'תיקוף מודל ארצי',client:'נתיבי ישראל',lead:'אלון גולדשטיין',contract:286966,billed:32176,avg:14928,pst:'חי - פעיל'},
+  {num:'1098',name:'חניוני אופניים ירושלים',client:'תוכנית אב ירושלים',lead:'אופיר הילברט',contract:101100,billed:72115,avg:9662,pst:'בסיכון'},
+  {num:'1099',name:'ניטור נתיבי העדפה ירושלים',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:159256,billed:69834,avg:14904,pst:'בסיכון'},
+  {num:'1100',name:'תכנון תפעולי חיפה והצפון',client:'נתיבי איילון',lead:'אופיר הילברט',contract:641900,billed:420915,avg:8316,pst:'חי - פעיל',contractHours:1646},
+  {num:'1111',name:'תיקוף כביש 55',client:'נתיבי איילון',lead:'אלון גולדשטיין',contract:34650,billed:0,avg:17325,pst:'חי - פעיל'},
+  {num:'1112',name:'גישור טופוגרפי ירושלים',client:'תוכנית אב ירושלים',lead:'אלון גולדשטיין',contract:481500,billed:0,avg:9800,pst:'חי - פעיל'},
+];
+
+let INVOICES = [
+  {id:1,num:1037,name:'מודל תל אביב',client:'נת"א',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:2,num:1038,name:'מודל חיפה והצפון',client:'נת"א',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:3,num:1041,name:'ספירות רוכבים',client:'אשד',lead:'אלון גולדשטיין',h:[null,95.5,null,null],status:5,notes:['','אושר כנדרש','אושר סופית',''],files:[{name:'report_1041_mar26.xlsx',by:'כלכלנית',date:'01/03/26',note:'דוח שעות מרץ'}],retNotes:'',retBy:''},
+  {id:4,num:1048,name:'מודל ב"ש',client:'נת"א',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:5,num:1054,name:'נגישות מסופים',client:'נת"א',lead:'סיון לב טנא',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:6,num:1065,name:'חניון משאיות לילה',client:'נת"י',lead:'סיון לב טנא',h:[11,37,null,null],status:5,notes:['תוספת שעות','אושר','אושר סופית',''],files:[{name:'hours_1065_mar26.xlsx',by:'כלכלנית',date:'02/03/26',note:'כולל תוספת שעות'}],retNotes:'',retBy:''},
+  {id:7,num:1067,name:'נת"צים צתא"ל',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:8,num:1068,name:'שמירת איילון',client:'נת"א',lead:'סיון לב טנא',h:[null,12,null,null],status:3,notes:['','אושר ע"י סיון','',''],files:[{name:'report_1068_v1.xlsx',by:'כלכלנית',date:'03/03/26',note:''}],retNotes:'',retBy:''},
+  {id:9,num:1071,name:'מדריך תקני חנייה מקומיים',client:'אשד',lead:'סיון לב טנא',h:[null,51.5,null,null],status:2,notes:['','','',''],files:[{name:'hours_1071_v1.xlsx',by:'כלכלנית',date:'04/03/26',note:'גרסה ראשונית'}],retNotes:'צריך לפרק שעות בין עומרי ומיכה בנפרד, ולוודא שאין חפיפה עם ינואר',retBy:'סיון לב טנא'},
+  {id:10,num:1073,name:'תוכנית גילה',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:11,num:1074,name:'ניהול מודלים',client:'נת"א',lead:'אופיר הילברט',h:[22,8,null,null],status:1,notes:['22 שעות אופיר + 8 שעות מיכה','','',''],files:[{name:'hours_1074_mar26.xlsx',by:'כלכלנית',date:'06/03/26',note:'דוח שעות מרץ'}],retNotes:'',retBy:''},
+  {id:12,num:1081,name:'ניטור עומסים קווי ת"צ',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,null,null,null],status:1,notes:['שעות רק של סיגמא','','',''],files:[{name:'hours_1081_mar26.xlsx',by:'כלכלנית',date:'05/03/26',note:'שעות סיגמא 6'}],retNotes:'',retBy:''},
+  {id:13,num:1082,name:'ניתוח קווי ת"צ בינעירוניים',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,28.5,117,null],status:5,notes:['','אושר','אושר סופית',''],files:[{name:'report_1082_final.xlsx',by:'כלכלנית',date:'01/03/26',note:''}],retNotes:'',retBy:''},
+  {id:14,num:1083,name:'דרך הנופש',client:'עיריית ת"א',lead:'אופיר הילברט',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:15,num:1084,name:'אזורי מיתון תנועה ירושלים',client:'תוכנית אב',lead:'אופיר הילברט',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:16,num:1089,name:'בדיקות משרד התחבורה',client:'אשד',lead:'סיון לב טנא',h:[120,null,null,null],status:5,notes:['','אושר','אושר',''],files:[{name:'report_1089_mar.xlsx',by:'כלכלנית',date:'02/03/26',note:'120 שעות מדויק'}],retNotes:'',retBy:''},
+  {id:17,num:1096,name:'תיקוף מודל ארצי',client:'נת"י',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:18,num:1097,name:'בחינת מטרו יצחק שדה',client:'עיריית ת"א',lead:'אופיר הילברט',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:19,num:1098,name:'חניון אופניים - שז"ר',client:'תוכנית אב',lead:'אופיר הילברט',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:20,num:1099,name:'ניטור נתיבי העדפה ירושלים',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,7,47.5,null],status:4,notes:['','אושר ראש"צ','',''],files:[{name:'hours_1099_v1.xlsx',by:'כלכלנית',date:'04/03/26',note:'גרסה ראשונה'},{name:'hours_1099_v2.xlsx',by:'כלכלנית',date:'07/03/26',note:'תוקן לפי הערות אלון'}],retNotes:'הסכום לא תואם — בדקי שוב את כמות שעות מתכנן 2 מול הפלט המקורי',retBy:'אופיר הילברט'},
+  {id:21,num:1100,name:'תכנון תפעולי חיפה והצפון',client:'נת"א',lead:'אופיר הילברט',h:[null,128,null,3],status:5,notes:['','','אושר',''],files:[{name:'report_1100_mar.xlsx',by:'כלכלנית',date:'01/03/26',note:''}],retNotes:'',retBy:''},
+  {id:22,num:1107,name:'ניתוח תנועתי צומת פנקס-נמיר',client:'עיריית ת"א',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:23,num:1109,name:'עדכון נספח תנועה הרצל/סלמה',client:'עיריית ת"א',lead:'סיון לב טנא',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+  {id:24,num:1111,name:'תיקוף כביש 55',client:'נת"א',lead:'אלון גולדשטיין',h:[null,50,null,null],status:5,notes:['תוספת שעה','אושר','אושר',''],files:[{name:'report_1111_mar.xlsx',by:'כלכלנית',date:'03/03/26',note:''}],retNotes:'',retBy:''},
+  {id:25,num:1112,name:'גישור טופוגרפי ירושלים',client:'תוכנית אב',lead:'אלון גולדשטיין',h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''},
+];
+
+// ===== USERS =====
+const USERS = [
+  {id:'eco',label:'כלכלנית',color:'#a78bfa',role:'economist',sees:'all'},
+  {id:'alon',label:'אלון גולדשטיין',color:'#38bdf8',role:'lead',sees:'own'},
+  {id:'sivan',label:'סיון לב טנא',color:'#38bdf8',role:'lead',sees:'own'},
+  {id:'ofir',label:'אופיר הילברט',color:'#4ade80',role:'manager',sees:'all'},
+];
+let uIdx=0, CU=USERS[0], dashFil='all', invTab='all', selId=null, projFil='all';
+
+// ===== HELPERS =====
+const th = inv => inv.h.reduce((s,v)=>s+(v||0),0);
+const amt = inv => th(inv)*(RATES[inv.num]||380);
+const fmtM = n => n>0?'₪'+Math.round(n).toLocaleString('he-IL'):'—';
+const fmtH = h => h>0?h:'—';
+const bdg = s => `<span class="status ${SC[s]}">${SL[s]}</span>`;
+
+function remaining(p){ return Math.max(0, p.contract - p.billed); }
+function remPct(p){ return p.contract>0?Math.round((remaining(p)/p.contract)*100):0; }
+function flag(p){
+  const pct=remPct(p);
+  if(pct<=20) return '<span class="flag-red">⚑ יתרה קריטית</span>';
+  if(pct<=40) return '<span class="flag-amber">⚑ יתרה נמוכה</span>';
+  return '';
+}
+
+// Can current user SEE this invoice?
+function canSee(inv){
+  if(CU.sees==='all') return true;
+  return inv.lead.includes(CU.label.split(' ')[0]);
+}
+
+// Is Ofir the team lead on this specific invoice?
+function ofirIsLead(inv){ return inv.lead.includes('אופיר'); }
+
+// What action can current user take?
+function getAct(inv){
+  const s=inv.status;
+
+  // ECONOMIST
+  if(CU.role==='economist'){
+    if(s===0&&th(inv)>0) return {lbl:'הגש לאישור ראש"צ',cls:'btn-grn',next:1};
+    if(s===2){
+      // Returned by Ofir-as-lead or regular lead → back to status 1 (to the lead)
+      const leadName = inv.retBy ? inv.retBy.split(' ')[0] : 'ראש"צ';
+      return {lbl:`הגש גרסה מעודכנת ל${leadName}`,cls:'btn-grn',next:1};
+    }
+    if(s===4){
+      // Returned by Ofir-as-manager → skip lead, go straight back to Ofir (status 3)
+      return {lbl:'הגש גרסה מעודכנת לאופיר',cls:'btn-pur',next:3};
+    }
+    if(s===5) return {lbl:'סמן כנשלח ללקוח',cls:'btn-send',next:6};
+  }
+
+  // REGULAR TEAM LEAD (Alon / Sivan)
+  if(CU.role==='lead' && canSee(inv)){
+    if(s===1) return {lbl:'אשר — העבר לאופיר',cls:'btn-grn',next:3};
+  }
+
+  // OFIR — dual role logic
+  if(CU.role==='manager'){
+    // Ofir as TEAM LEAD: invoice submitted (status 1) for his own projects
+    if(s===1 && ofirIsLead(inv)){
+      return {lbl:'אשר סופית (ראש"צ + מנהל)',cls:'btn-pur',next:5};
+    }
+    // Ofir as MANAGER: invoice approved by another lead (status 3)
+    if(s===3) return {lbl:'אשר סופית',cls:'btn-pur',next:5};
+    // Ofir as MANAGER: returned invoice came back after correction (status 1, not his lead project)
+    // — handled above by regular lead flow, nothing extra needed
+  }
+  return null;
+}
+
+function canReturn(inv){
+  const s=inv.status;
+  // Regular leads can return status 1 invoices that are their own
+  if(CU.role==='lead' && canSee(inv) && s===1) return true;
+  // Ofir as TEAM LEAD: can return status 1 for his own projects
+  if(CU.role==='manager' && s===1 && ofirIsLead(inv)) return true;
+  // Ofir as MANAGER: can return status 3 (approved by other lead)
+  if(CU.role==='manager' && s===3 && !ofirIsLead(inv)) return true;
+  return false;
+}
+
+// ===== RENDER DASHBOARD =====
+function rDash(){
+  // Alerts
+  let al='';
+  const needLead = INVOICES.filter(i=>canSee(i)&&i.status===1);
+  const needMgr = INVOICES.filter(i=>i.status===3);
+  const readySend = INVOICES.filter(i=>i.status===5);
+  const returned = INVOICES.filter(i=>(i.status===2||i.status===4)&&canSee(i));
+  if(CU.role==='lead'&&needLead.length) al+=`<div class="alert al-warn"><span class="al-ico">⚠</span><span class="al-txt">${needLead.length} חשבונות ממתינים לאישורך</span><button class="al-btn" onclick="gp('invoices')">לאישור</button></div>`;
+  if(CU.role==='manager'){
+    // Ofir as team lead — his own projects waiting
+    const myLeadPending = INVOICES.filter(i=>i.status===1&&ofirIsLead(i));
+    if(myLeadPending.length) al+=`<div class="alert al-warn"><span class="al-ico">⚠</span><span class="al-txt">${myLeadPending.length} מהפרויקטים שלך ממתינים לאישורך כראש צוות</span><button class="al-btn" onclick="gp('invoices')">לאישור</button></div>`;
+    // Ofir as manager — other leads approved, waiting for final
+    if(needMgr.length) al+=`<div class="alert al-warn"><span class="al-ico">⚠</span><span class="al-txt">${needMgr.length} חשבונות אושרו ע"י ראשי הצוות — ממתינים לאישורך הסופי</span><button class="al-btn" onclick="gp('invoices')">לאישור</button></div>`;
+  }
+  if(CU.role==='economist'&&readySend.length) al+=`<div class="alert al-ok"><span class="al-ico">✓</span><span class="al-txt">${readySend.length} חשבונות מאושרים — מוכנים לשליחה ללקוח</span><button class="al-btn" onclick="gp('invoices')">לשליחה</button></div>`;
+  if(returned.length && CU.role==='economist') al+=`<div class="alert al-err"><span class="al-ico">↺</span><span class="al-txt">${returned.length} חשבונות הוחזרו אלייך לתיקון</span><button class="al-btn" onclick="gp('submit')">לעדכון</button></div>`;
+  document.getElementById('alerts').innerHTML=al;
+
+  // Metrics
+  const vis = INVOICES.filter(i=>canSee(i));
+  const cnt = Array(7).fill(0); vis.forEach(i=>cnt[i.status]++);
+  const approvedAmt = vis.filter(i=>i.status>=5).reduce((s,i)=>s+amt(i),0);
+  document.getElementById('mets').innerHTML=`
+    <div class="met met-b"><div class="mlbl">חשבונות נראים לי</div><div class="mval">${vis.length}</div><div class="msub">מרץ 2026</div></div>
+    <div class="met met-a"><div class="mlbl">ממתינים לאישור</div><div class="mval">${cnt[1]+cnt[3]}</div><div class="msub">ראש"צ (${cnt[1]}) + אופיר (${cnt[3]})</div></div>
+    <div class="met met-r"><div class="mlbl">הוחזרו לתיקון</div><div class="mval">${cnt[2]+cnt[4]}</div><div class="msub">${cnt[2]+cnt[4]>0?'דורש טיפול':''}</div></div>
+    <div class="met met-p"><div class="mlbl">אושרו סופית</div><div class="mval">${cnt[5]}</div><div class="msub">ממתינים לשליחה</div></div>
+    <div class="met met-g"><div class="mlbl">נשלחו ללקוח</div><div class="mval">${cnt[6]}</div><div class="msub">${fmtM(approvedAmt)}</div></div>
+  `;
+  document.getElementById('nb').textContent=cnt[1]+cnt[2]+cnt[3]+cnt[4];
+
+  // Table
+  let data=INVOICES.filter(i=>canSee(i));
+  if(dashFil!=='all') data=data.filter(i=>i.lead.includes(dashFil));
+  const proj = num => PROJECTS.find(p=>p.num===String(num));
+  document.getElementById('dtb').innerHTML=data.map(inv=>{
+    const h=th(inv),a=amt(inv),act=getAct(inv);
+    const p=proj(inv.num); const rem=p?fmtM(remaining(p)):'—'; const fl=p?flag(p):'';
+    const retIco=inv.status===2||inv.status===4?'<span title="הוחזר לתיקון" style="color:var(--red);font-size:12px">↺</span>':'';
+    const fileIco=inv.files.length?`<button class="btn btn-gh" onclick="om(${inv.id})" style="font-size:9px">📎 ${inv.files.length}</button>`:'—';
+    const btn=act?`<button class="btn ${act.cls}" onclick="openReview(${inv.id})">${act.lbl}</button>`:`<button class="btn btn-gh" onclick="openReview(${inv.id})">צפה</button>`;
+    return`<tr>
+      <td><div class="pn">${inv.name}</div><div class="pm">#${inv.num}</div></td>
+      <td><span class="chip">${inv.client}</span></td>
+      <td style="font-size:10px;color:var(--txt2)">${inv.lead.split(' ')[0]}</td>
+      <td class="mono">${fmtH(h)}${h>0?`<div style="font-size:8px;color:var(--txt3)">${inv.h.map((v,i)=>v?`מ${i+1}:${v}`:'').filter(Boolean).join(' ')}</div>`:''}</td>
+      <td class="amt">${fmtM(a)}</td>
+      <td style="font-size:10px">${rem} ${fl}</td>
+      <td>${bdg(inv.status)} ${retIco}</td>
+      <td>${fileIco}</td>
+      <td>${btn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== RENDER INVOICES PAGE =====
+function rInv(){
+  let data=INVOICES.filter(i=>canSee(i));
+  if(invTab==='mine') data=data.filter(i=>getAct(i)!==null);
+  if(invTab==='ret') data=data.filter(i=>i.status===2||i.status===4);
+  if(invTab==='done') data=data.filter(i=>i.status===6);
+  document.getElementById('itb').innerHTML=data.map(inv=>{
+    const h=th(inv),a=amt(inv),act=getAct(inv);
+    const retIco=inv.status===2||inv.status===4?`<span class="flag-red" title="${inv.retNotes}">↺ ${inv.retBy?.split(' ')[0]}</span>`:'—';
+    const btn=act?`<button class="btn ${act.cls}" onclick="openReview(${inv.id})">${act.lbl}</button>`:`<button class="btn btn-gh" onclick="openReview(${inv.id})">צפה</button>`;
+    return`<tr>
+      <td><div class="pn">${inv.name}</div><div class="pm">#${inv.num}</div></td>
+      <td><span class="chip">${inv.client}</span></td>
+      <td style="font-size:10px;color:var(--txt2)">${inv.lead.split(' ')[0]}</td>
+      <td class="mono" style="font-size:10px">${h>0?h:'—'}</td>
+      <td class="amt">${fmtM(a)}</td>
+      <td>${bdg(inv.status)}</td>
+      <td style="font-size:9px;color:var(--txt2)">${inv.files.length?`v${inv.files.length}`:'—'}</td>
+      <td>${retIco}</td>
+      <td>${btn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== RENDER SUBMIT PAGE =====
+function rSubmit(){
+  const data=INVOICES.filter(i=>canSee(i)&&(i.status===0||i.status===2||i.status===4));
+  document.getElementById('stb').innerHTML=data.map(inv=>`<tr>
+    <td><div class="pn" style="font-size:11px">${inv.name} ${inv.status===2?'<span class="tag tag-ret">הוחזר ע"י ראש"צ</span>':inv.status===4?'<span class="tag tag-ret">הוחזר ע"י אופיר</span>':''}</div><div class="pm">#${inv.num} · ${inv.lead.split(' ')[0]}</div></td>
+    ${[0,1,2,3].map(n=>`<td><div class="hl">מת׳${n+1}</div><input class="hi" type="number" min="0" step="0.5" placeholder="0" value="${inv.h[n]||''}" id="hi_${inv.id}_${n}" oninput="lv(${inv.id},${n},this.value)"></td>`).join('')}
+    <td class="mono" id="ht_${inv.id}" style="font-size:11px">${fmtH(th(inv))}</td>
+    <td class="mono" id="ha_${inv.id}" style="font-size:11px;color:var(--acc2)">${fmtM(amt(inv))}</td>
+    <td><input class="hi" style="width:110px;text-align:right;font-family:'Heebo',sans-serif" placeholder="הערה..." id="hn_${inv.id}" value="${inv.notes[0]||''}"></td>
+  </tr>`).join('');
+}
+
+// ===== RENDER PROJECTS =====
+function rProj(){
+  let data = projFil==='all'?PROJECTS:projFil==='דגל'?PROJECTS.filter(p=>remPct(p)<=40):PROJECTS.filter(p=>p.pst===projFil);
+  document.getElementById('ptb').innerHTML=data.map(p=>{
+    const rem=remaining(p); const pct=remPct(p);
+    const bc=pct<=20?'pb-danger':pct<=40?'pb-warn':'pb-ok';
+    const sc=p.pst==='חי - פעיל'?'st4':p.pst==='בסיכון'?'st2':'st0';
+    return`<tr>
+      <td><div class="pn" style="font-size:11px">${p.name}</div><div class="pm">#${p.num}</div></td>
+      <td style="font-size:10px;color:var(--txt2)">${p.client.split(' ')[0]}</td>
+      <td style="font-size:10px;color:var(--txt2)">${p.lead.split(' ')[0]}</td>
+      <td class="amt" style="font-size:10px">${fmtM(p.contract)}</td>
+      <td class="amt" style="font-size:10px">${fmtM(p.billed)}</td>
+      <td class="amt" style="font-size:10px">${fmtM(rem)}</td>
+      <td style="min-width:72px"><span style="font-family:var(--mono);font-size:9px;color:var(--txt2)">${pct}% נותר</span><div class="pb-bg"><div class="pb-fill ${bc}" style="width:${Math.min(pct,100)}%"></div></div></td>
+      <td class="amt" style="font-size:10px">${p.avg?fmtM(p.avg):'—'}</td>
+      <td>${flag(p)||'<span style="font-size:10px;color:var(--txt3)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== MODAL =====
+function om(id){
+  const inv=INVOICES.find(i=>i.id===id); selId=id;
+  document.getElementById('mn').value=inv.name;
+  document.getElementById('mcl').value=inv.client;
+  document.getElementById('ml').value=inv.lead;
+  document.getElementById('mrt').value='₪'+(RATES[inv.num]||380)+' / שעה';
+
+  // Steps
+  const sNames=['הוגש','אישור ראש"צ','אישור אופיר','נשלח'];
+  const sMap=[0,[1,2],[3,4],5,6];
+  document.getElementById('msteps').innerHTML=sNames.map((s,i)=>{
+    const thresholds=[[1,2],[1,2,3,4],[3,4,5],[5,6]];
+    const done=inv.status>Math.max(...(thresholds[i]||[99]));
+    const active=thresholds[i]?.includes(inv.status);
+    const rejected=active&&(inv.status===2||inv.status===4);
+    const cls=rejected?'rejected':done?'done':active?'active':'';
+    return`<div class="step ${cls}">${done?'✓ ':rejected?'↺ ':active?'● ':'○ '}${s}</div>`;
+  }).join('');
+
+  // Return banner
+  let rb='';
+  if(inv.retNotes) rb=`<div class="ret-banner"><span class="ret-ico">↺</span><div><div style="font-weight:600;margin-bottom:2px">הוחזר לתיקון — ${inv.retBy}</div><div style="font-size:10px">${inv.retNotes}</div></div></div>`;
+  document.getElementById('retBanner').innerHTML=rb;
+
+  // Hours table
+  const h=th(inv),a=amt(inv);
+  document.getElementById('mhbody').innerHTML=`<tr>${inv.h.map(v=>`<td>${v||'—'}</td>`).join('')}<td style="font-weight:600">${h||'—'}</td><td style="color:var(--acc2);font-weight:600">${fmtM(a)}</td></tr>
+  <tr class="total-row"><td colspan="4" style="text-align:left;font-size:9px;color:var(--txt2)">תעריף: ₪${RATES[inv.num]||380}/ש׳</td><td>${h||0} ש׳</td><td>${fmtM(a)}</td></tr>`;
+
+  // File versions
+  let vl='';
+  if(inv.files.length){
+    vl=inv.files.map((f,i)=>`<div class="ver-item">
+      <div class="ver-num">v${i+1}</div>
+      <div class="ver-info">
+        <div class="ver-by">${f.name}</div>
+        <div class="ver-date">הועלה: ${f.date} · ע"י ${f.by}</div>
+        ${f.note?`<div class="ver-note">${f.note}</div>`:''}
+      </div>
+      <div class="ver-actions">
+        <button class="btn btn-gh" onclick="dlFile('${f.name}')" style="font-size:9px">⬇ הורד</button>
+        <button class="btn btn-gh" onclick="viewFile('${f.name}',${inv.id})" style="font-size:9px">👁 צפה</button>
+      </div>
+    </div>`).join('');
+  } else vl='<div style="font-size:10px;color:var(--txt3);padding:8px 0">לא הועלו קבצים עדיין</div>';
+  document.getElementById('mverlist').innerHTML=vl;
+
+  // Upload zone in modal (for economist)
+  let upz='';
+  if(CU.role==='economist'&&inv.status<6){
+    upz=`<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sur2);border:1px dashed var(--bdr);border-radius:6px;cursor:pointer;font-size:10px;color:var(--txt2);margin-top:6px" for="mfup">
+      📎 <span>הוסף / עדכן קובץ Excel</span>
+      <input type="file" id="mfup" accept=".xlsx,.xls,.csv" style="display:none" onchange="addFile(${inv.id},this)">
+    </label>`;
+  }
+  document.getElementById('mupzone').innerHTML=upz;
+
+  // Notes label
+  const nl={economist:'הערות לדוח / לראש"צ',lead:'הערות לכלכלנית (אם מחזיר) / לאופיר',manager:'הערות לכלכלנית (אם מחזיר)'};
+  document.getElementById('mnl').textContent=nl[CU.role]||'הערות';
+  document.getElementById('mnt').value='';
+
+  // Action info
+  // Action info — expanded to cover ofir-as-lead case
+  const ofirLead = ofirIsLead(inv);
+  const infos={
+    0:{economist:'הזן שעות בטבלה הגשה ועלה קובץ Excel, לאחר מכן הגש'},
+    1:{lead:'בדוק את דוח השעות המצורף ואשר או החזר לתיקון עם הערות',
+       manager: ofirLead ? 'אופיר — אתה ראש הצוות על פרויקט זה. אשר סופית או החזר לתיקון' : ''},
+    2:{economist:'ראש הצוות החזיר לתיקון — עדכן את הדוח ועלה גרסה חדשה'},
+    3:{manager: ofirLead ? '' : 'אושר ע"י ראש"צ — בדוק ואשר סופית או החזר לתיקון'},
+    4:{economist:'אופיר החזיר לתיקון — עדכן ועלה גרסה חדשה (תוגש ישירות לאופיר)'},
+    5:{economist:'מאושר ע"י אופיר — שלח ללקוח ועדכן סטטוס'},
+  };
+  const infoTxt = (infos[inv.status]?.[CU.role]||'');
+  document.getElementById('minfo').textContent = infoTxt ? '💡 ' + infoTxt : '';
+
+  // Footer buttons
+  const act=getAct(inv);
+  const canRet=canReturn(inv);
+  let ft='';
+  if(act) ft+=`<button class="btn ${act.cls}" onclick="doAct(${id},${act.next})">${act.lbl}</button>`;
+  if(canRet) ft+=`<button class="btn btn-ret" onclick="doReturn(${id})">↺ החזר לתיקון עם הערות</button>`;
+  if(!act && !canRet) ft+=`<span style="font-size:10px;color:var(--txt3)">אין פעולות זמינות למשתמש זה על חשבון זה (סטטוס ${inv.status})</span>`;
+  ft+=`<button class="btn btn-gh" onclick="cm()" style="margin-right:auto">סגור</button>`;
+  document.getElementById('mft').innerHTML=ft;
+
+  document.getElementById('mt').textContent=SL[inv.status]+' — '+inv.name;
+  document.getElementById('modal').classList.add('open');
+}
+
+function cm(){ document.getElementById('modal').classList.remove('open'); selId=null; }
+
+function doAct(id,next){
+  const inv=INVOICES.find(i=>i.id===id);
+  const note=document.getElementById('mnt').value.trim();
+  if(note){
+    if(CU.role==='economist') inv.notes[0]=note;
+    else if(CU.role==='lead') inv.notes[1]=note;
+    else inv.notes[2]=note;
+  }
+  inv.status=next;
+  inv.retNotes=''; inv.retBy='';
+  // Update project remaining when sent to client
+  if(next===6){ updateRemaining(inv); }
+  cm(); rf();
+  const msgs={1:'✓ הדוח הוגש — התרעה נשלחה לראש"צ',3:'✓ אושר ע"י ראש"צ — אופיר קיבל התרעה',5:'✓ אושר סופית — הכלכלנית תקבל התרעה לשליחה',6:'✓ נשלח ללקוח — יתרת הפרויקט עודכנה אוטומטית'};
+  toast(msgs[next]||'✓ עודכן','t-ok');
+}
+
+function doReturn(id){
+  const inv=INVOICES.find(i=>i.id===id);
+  const note=document.getElementById('mnt').value.trim();
+  if(!note){ toast('יש להוסיף הערה לפני החזרה לתיקון','t-err'); return; }
+  inv.retNotes=note; inv.retBy=CU.label;
+  // Ofir returning as TEAM LEAD (status 1, his own project) → status 2 (back to economist → back to lead)
+  // Ofir returning as MANAGER (status 3, other lead's project) → status 4 (back to economist → back to manager)
+  // Regular lead returning → status 2
+  if(CU.role==='manager' && inv.status===3 && !ofirIsLead(inv)){
+    inv.status=4; // ofir-as-manager returns → economist sends back to ofir
+  } else {
+    inv.status=2; // lead returns (including ofir-as-lead) → economist sends back to lead
+  }
+  cm(); rf();
+  const whoReturns = (CU.role==='manager' && ofirIsLead(inv)) ? 'כראש צוות' : CU.role==='manager' ? 'כמנהל משרד' : 'ראש"צ';
+  toast(`↺ הוחזר לכלכלנית ע"י אופיר ${whoReturns} — היא תקבל התרעה`,'t-warn');
+}
+
+function updateRemaining(inv){
+  const p=PROJECTS.find(p=>p.num===String(inv.num));
+  if(p){ p.billed+=amt(inv); }
+}
+
+function addFile(id,input){
+  if(!input.files.length) return;
+  const inv=INVOICES.find(i=>i.id===id);
+  const f=input.files[0];
+  inv.files.push({name:f.name,by:CU.label,date:new Date().toLocaleDateString('he-IL'),note:'גרסה '+( inv.files.length+1)});
+  cm(); setTimeout(()=>om(id),100);
+  toast('📎 '+f.name+' — הועלה בהצלחה','t-ok');
+}
+
+function dlFile(name){ toast('⬇ מוריד: '+name,'t-info'); }
+function viewFile(name,id){
+  const inv=INVOICES.find(i=>i.id===id);
+  // Show simulated hours table from the file
+  toast('👁 פותח: '+name,'t-info');
+}
+
+// ===== SUBMIT FROM FORM =====
+
+
+// ===== NAVIGATION =====
+function gp(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nitem').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const map={dashboard:'דשבורד',invoices:'חשבונות',submit:'הגשת',projects:'פרויקטים',flow:'תהליך'};
+  document.querySelectorAll('.nitem').forEach(n=>{if(n.textContent.trim().includes(map[name]||''))n.classList.add('active');});
+  if(name==='invoices')rInv();
+  if(name==='submit'){submitFilter='all';rSubmit();}
+  if(name==='projects')rProj();
+  if(name==='manage'){if(CU.role==='manager'||CU.role==='economist')rManage();else{toast('גישה לאופיר ולכלכלנית בלבד','t-err');return;}}
+  // review page content already rendered by openReview() — no re-call needed
+}
+function st(el,tab){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); invTab=tab; rInv(); }
+function fd(f,btn){ dashFil=f; document.querySelectorAll('#page-dashboard .fb').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); rDash(); }
+function fp(f,btn){ projFil=f; document.querySelectorAll('#page-projects .fb').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); rProj(); }
+
+// ===== USER =====
+function cycleUser(){
+  uIdx=(uIdx+1)%USERS.length; CU=USERS[uIdx];
+  document.getElementById('ulbl').textContent=CU.label;
+  document.getElementById('udot').style.background=CU.color;
+  dashFil='all';
+  document.querySelectorAll('#page-dashboard .fb').forEach(b=>b.classList.remove('active'));
+  const allBtn=document.querySelector('#page-dashboard .fb');
+  if(allBtn) allBtn.classList.add('active');
+  rf(); toast('מחובר כ-'+CU.label,'t-info');
+}
+
+function chMonth(v){ toast('חודש: '+v,'t-info'); }
+
+// ===== TOAST =====
+function toast(msg,cls){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+(cls||''); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200); }
+
+
+
+
+// ===== MANAGE PROJECTS =====
+let manageFilter = 'active';
+let editingProjNum = null;
+
+function setManageTab(el, filter) {
+  document.querySelectorAll('#manageTabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  manageFilter = filter;
+  rManage();
+}
+
+function rManage() {
+  // Only ofir can access
+  if(CU.role !== 'manager' && CU.role !== 'economist') {
+    document.getElementById('manageTbody').innerHTML =
+      '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--txt3)">גישה לאופיר ולכלכלנית בלבד</td></tr>';
+    return;
+  }
+
+  const filterMap = {active:'חי - פעיל', risk:'בסיכון', frozen:'מוקפא', closed:'סגור'};
+  const targetStatus = filterMap[manageFilter];
+  const data = targetStatus ? PROJECTS.filter(p=>p.pst===targetStatus) : PROJECTS;
+
+  const statusColors = {'חי - פעיל':'st4','בסיכון':'st2','מוקפא':'st0','סגור':'st5'};
+
+  document.getElementById('manageTbody').innerHTML = data.map(p => {
+    const rem = remaining(p);
+    const pct = 100 - remPct(p);
+    const bc = remPct(p)<=20?'pb-danger':remPct(p)<=40?'pb-warn':'pb-ok';
+    const contractHours = p.contractHours || (p.contract && p.rate ? Math.round(p.contract/p.rate) : '—');
+    const sc = statusColors[p.pst] || 'st0';
+    const fl = flag(p);
+    return `<tr>
+      <td><div class="pn" style="font-size:11px">${p.name}</div><div class="pm">#${p.num}</div></td>
+      <td style="font-size:10px;color:var(--txt2)">${(p.client||'').split(' ')[0]}</td>
+      <td style="font-size:10px;color:var(--txt2)">${(p.lead||'').split(' ')[0]}</td>
+      <td class="mono" style="font-size:10px">₪${p.avg?Math.round(p.contract/(p.avg||1)*p.avg/p.avg*1):RATES[parseInt(p.num)]||380}</td>
+      <td class="mono" style="font-size:10px">${p.contractHours||'—'}</td>
+      <td class="amt" style="font-size:10px">${fmtM(p.contract)}</td>
+      <td class="amt" style="font-size:10px">${fmtM(rem)} ${fl}</td>
+      <td style="min-width:60px">
+        <span style="font-size:9px;color:var(--txt2)">${pct}%</span>
+        <div class="pb-bg"><div class="pb-fill ${bc}" style="width:${Math.min(pct,100)}%"></div></div>
+      </td>
+      <td><span class="status ${sc}">${p.pst}</span></td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-gh" onclick="openEditProject('${p.num}')" style="font-size:9px">עריכה</button>
+          ${p.pst==='חי - פעיל'||p.pst==='בסיכון' ?
+            `<button class="btn" style="background:#1a1208;color:var(--amber);font-size:9px" onclick="quickStatus('${p.num}','מוקפא')">הקפא</button>
+             <button class="btn btn-ret" onclick="quickStatus('${p.num}','סגור')" style="font-size:9px">סגור</button>` :
+            `<button class="btn btn-grn" onclick="quickStatus('${p.num}','חי - פעיל')" style="font-size:9px">הפעל</button>`
+          }
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--txt3)">אין פרויקטים בסטטוס זה</td></tr>';
+}
+
+function quickStatus(num, newStatus) {
+  const p = PROJECTS.find(p=>p.num===num);
+  if(!p) return;
+  const action = newStatus==='מוקפא'?'הוקפא':newStatus==='סגור'?'נסגר':'הופעל מחדש';
+  p.pst = newStatus;
+  rManage();
+  rDash();
+  toast(`✓ פרויקט ${p.name} — ${action}`, 't-ok');
+}
+
+function openAddProject() {
+  if(CU.role!=='manager'&&CU.role!=='economist'){ toast('גישה לאופיר ולכלכלנית בלבד','t-err'); return; }
+  editingProjNum = null;
+  document.getElementById('projModalTitle').textContent = 'הוספת פרויקט חדש';
+  document.getElementById('pm-num').value='';
+  document.getElementById('pm-name').value='';
+  document.getElementById('pm-client').value='נתיבי ישראל';
+  document.getElementById('pm-lead').value='אלון גולדשטיין';
+  document.getElementById('pm-rate').value='380';
+  document.getElementById('pm-hours').value='';
+  document.getElementById('pm-contract').value='';
+  document.getElementById('pm-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pm-status').value='חי - פעיל';
+  document.getElementById('pm-notes').value='';
+  document.getElementById('pm-reason').value='';
+  document.getElementById('closeReasonRow').style.display='none';
+  document.getElementById('pm-delete-btn').style.display='none';
+  // Auto-calc contract when rate/hours change
+  document.getElementById('pm-rate').oninput = calcContract;
+  document.getElementById('pm-hours').oninput = calcContract;
+  document.getElementById('pm-status').onchange = toggleCloseReason;
+  document.getElementById('projModal').classList.add('open');
+}
+
+function openEditProject(num) {
+  if(CU.role!=='manager'&&CU.role!=='economist'){ toast('גישה לאופיר ולכלכלנית בלבד','t-err'); return; }
+  const p = PROJECTS.find(p=>p.num===num);
+  if(!p) return;
+  editingProjNum = num;
+  document.getElementById('projModalTitle').textContent = 'עריכת פרויקט — ' + p.name;
+  document.getElementById('pm-num').value = p.num;
+  document.getElementById('pm-num').readOnly = true;
+  document.getElementById('pm-name').value = p.name;
+  document.getElementById('pm-client').value = (p.client||'').split(' ')[0]==='נתיבי'&&p.client.includes('ישראל')?'נתיבי ישראל':p.client||'';
+  document.getElementById('pm-lead').value = p.lead||'אלון גולדשטיין';
+  document.getElementById('pm-rate').value = RATES[parseInt(p.num)]||380;
+  document.getElementById('pm-hours').value = p.contractHours||Math.round(p.contract/(RATES[parseInt(p.num)]||380))||'';
+  document.getElementById('pm-contract').value = p.contract||'';
+  document.getElementById('pm-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pm-status').value = p.pst||'חי - פעיל';
+  document.getElementById('pm-notes').value = '';
+  document.getElementById('pm-reason').value = '';
+  toggleCloseReason();
+  document.getElementById('pm-delete-btn').style.display=(CU.role==='manager'?'block':'none');
+  document.getElementById('pm-rate').oninput = calcContract;
+  document.getElementById('pm-hours').oninput = calcContract;
+  document.getElementById('pm-status').onchange = toggleCloseReason;
+  document.getElementById('projModal').classList.add('open');
+}
+
+function calcContract() {
+  const rate = parseFloat(document.getElementById('pm-rate').value)||0;
+  const hours = parseFloat(document.getElementById('pm-hours').value)||0;
+  if(rate && hours) document.getElementById('pm-contract').value = Math.round(rate*hours);
+}
+
+function toggleCloseReason() {
+  const s = document.getElementById('pm-status').value;
+  document.getElementById('closeReasonRow').style.display =
+    (s==='סגור'||s==='מוקפא') ? 'block' : 'none';
+}
+
+function saveProjModal() {
+  const num = document.getElementById('pm-num').value.trim();
+  const name = document.getElementById('pm-name').value.trim();
+  const rate = parseFloat(document.getElementById('pm-rate').value)||380;
+  const hours = parseFloat(document.getElementById('pm-hours').value)||0;
+  const contract = parseFloat(document.getElementById('pm-contract').value)||Math.round(rate*hours);
+  const lead = document.getElementById('pm-lead').value;
+  const client = document.getElementById('pm-client').value;
+  const pst = document.getElementById('pm-status').value;
+
+  if(!num||!name){ toast('מספר ושם פרויקט חובה','t-err'); return; }
+  if(!hours||hours<=0){ toast('תקציב שעות חוזי חובה','t-err'); return; }
+
+  if(editingProjNum) {
+    // Edit existing
+    const p = PROJECTS.find(p=>p.num===editingProjNum);
+    if(p){
+      p.name=name; p.lead=lead; p.client=client;
+      p.contract=contract; p.contractHours=hours; p.avg=Math.round(contract/12); p.pst=pst;
+      RATES[parseInt(num)] = rate;
+    }
+    toast('✓ פרויקט עודכן — '+name,'t-ok');
+  } else {
+    // Add new
+    if(PROJECTS.find(p=>p.num===num)){ toast('מספר פרויקט כבר קיים','t-err'); return; }
+    PROJECTS.push({num,name,client,lead,contract,billed:0,avg:Math.round(contract/12),pst,contractHours:hours});
+    RATES[parseInt(num)] = rate;
+    // Add invoice placeholder for current month
+    const newId = Math.max(...INVOICES.map(i=>i.id))+1;
+    INVOICES.push({id:newId,num:parseInt(num),name,client,lead,h:[null,null,null,null],status:0,notes:['','','',''],files:[],retNotes:'',retBy:''});
+    toast('✓ פרויקט חדש נוסף — '+name,'t-ok');
+  }
+  closeProjModal();
+  rManage();
+  rDash();
+}
+
+function deleteProject() {
+  if(CU.role!=='manager'){ toast('מחיקה — אופיר בלבד','t-err'); return; }
+  if(!editingProjNum) return;
+  const p = PROJECTS.find(p=>p.num===editingProjNum);
+  if(!p) return;
+  if(!confirm('האם למחוק את הפרויקט ' + p.name + '? פעולה זו בלתי הפיכה.')) return;
+  const idx = PROJECTS.indexOf(p);
+  PROJECTS.splice(idx,1);
+  closeProjModal();
+  rManage();
+  rDash();
+  toast('פרויקט נמחק — '+p.name,'t-warn');
+}
+
+function closeProjModal() {
+  document.getElementById('projModal').classList.remove('open');
+  const numEl = document.getElementById('pm-num');
+  if(numEl) numEl.readOnly = false;
+  editingProjNum = null;
+}
+
+// ===== SUBMIT PAGE — PER PROJECT CARDS =====
+let submitFilter = 'all';
+
+function filterSubmit(f, btn) {
+  submitFilter = f;
+  document.querySelectorAll('#page-submit .fb').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  rSubmit();
+}
+
+function rSubmit() {
+  // Economist sees only her projects (all, since sees=all)
+  // Show invoices that are: waiting (0), returned to lead (2), returned to mgr (4)
+  // and submitted ones (1,3,5) for reference
+  let data = INVOICES.filter(i => canSee(i));
+  if(submitFilter === 'open') data = data.filter(i => i.status===0 || i.status===2 || i.status===4);
+  if(submitFilter === 'returned') data = data.filter(i => i.status===2 || i.status===4);
+  if(submitFilter === 'submitted') data = data.filter(i => i.status>=1);
+
+  const cards = data.map(inv => {
+    const h = th(inv), a = amt(inv);
+    const isOpen = inv.status===0 || inv.status===2 || inv.status===4;
+    const isReturned = inv.status===2 || inv.status===4;
+    const isSubmitted = inv.status>=1 && inv.status<6;
+    const isSent = inv.status===6;
+
+    const cardCls = isReturned ? 'proj-card pc-returned' : isSent ? 'proj-card pc-submitted' : 'proj-card';
+
+    // Return note banner
+    let retNote = '';
+    if(isReturned && inv.retNotes) {
+      const retLbl = inv.status===2 ? 'ראש הצוות' : 'אופיר';
+      retNote = `<div class="pc-ret-note">
+        <div class="pc-ret-lbl">↺ הוחזר לתיקון ע"י ${retLbl} — ${inv.retBy}</div>
+        <div class="pc-ret-txt">${inv.retNotes}</div>
+      </div>`;
+    }
+
+    // File list
+    const fileList = inv.files.map((f,i) => `
+      <div class="pc-file">
+        <span style="font-size:13px">📎</span>
+        <div style="flex:1">
+          <div class="pc-fname">v${i+1} · ${f.name}</div>
+          <div class="pc-fmeta">${f.date} · ${f.by}${f.note?' · '+f.note:''}</div>
+        </div>
+        <button class="btn btn-gh" onclick="dlFile('${f.name}')" style="font-size:9px">⬇</button>
+      </div>`).join('');
+
+    // Hours inputs (only editable if open/returned)
+    const hInputs = [0,1,2,3].map(n => `
+      <div>
+        <div class="pc-hlbl">מתכנן ${n+1}</div>
+        <input class="hi" type="number" min="0" step="0.5" placeholder="0"
+          value="${inv.h[n]||''}"
+          ${!isOpen ? 'readonly style="opacity:.5"' : ''}
+          id="pch_${inv.id}_${n}"
+          oninput="pcUpdate(${inv.id},${n},this.value)">
+      </div>`).join('');
+
+    // Submit button logic
+    let submitBtn = '';
+    if(inv.status===0) {
+      submitBtn = `<button class="btn btn-grn" onclick="pcSubmit(${inv.id})"
+        ${h===0?'disabled title="הזן שעות תחילה"':''}>הגש לאישור ראש"צ</button>`;
+    } else if(inv.status===2) {
+      const leadName = inv.retBy ? inv.retBy.split(' ')[0] : 'ראש"צ';
+      submitBtn = `<button class="btn btn-grn" onclick="pcSubmit(${inv.id})"
+        ${h===0?'disabled':''}> הגש גרסה מעודכנת ל${leadName}</button>`;
+    } else if(inv.status===4) {
+      submitBtn = `<button class="btn btn-pur" onclick="pcSubmit(${inv.id})"
+        ${h===0?'disabled':''}>הגש גרסה מעודכנת לאופיר</button>`;
+    }
+
+    // Status summary right side of header
+    const hdrRight = `
+      <div class="pc-hdr-right">
+        ${h>0 ? `<span class="mono" style="font-size:11px;color:var(--acc2)">${h} ש׳</span>` : ''}
+        ${bdg(inv.status)}
+        ${isReturned ? '<span style="color:var(--red);font-size:12px">↺</span>' : ''}
+        ${inv.files.length ? `<span style="font-size:9px;color:var(--txt3)">📎${inv.files.length}</span>` : ''}
+      </div>`;
+
+    const bodyId = `pcbody_${inv.id}`;
+    const chevId = `pcchev_${inv.id}`;
+    // Auto-open returned and new ones
+    const autoOpen = isOpen ? 'open' : '';
+
+    return `<div class="${cardCls}" id="pccard_${inv.id}">
+      <div class="pc-hdr" onclick="toggleCard(${inv.id})">
+        <span class="pc-chevron ${autoOpen}" id="${chevId}">▶</span>
+        <div class="pc-hdr-info">
+          <div class="pc-name">${inv.name}</div>
+          <div class="pc-meta">#${inv.num} · ${inv.client} · ${inv.lead.split(' ')[0]}</div>
+        </div>
+        ${hdrRight}
+      </div>
+      <div class="pc-body ${autoOpen}" id="${bodyId}">
+        ${retNote}
+
+        <div class="pc-section">
+          <div class="pc-slbl">קובץ Excel — דוח שעות</div>
+          ${fileList}
+          ${isOpen ? `<label class="pc-upzone" for="pcup_${inv.id}">
+            <span style="font-size:14px">📊</span>
+            <span>${inv.files.length ? 'עדכן קובץ' : 'העלה קובץ Excel מהמערכת הפנימית'}</span>
+            <span style="margin-right:auto;font-size:9px;color:var(--txt3)">.xlsx .csv</span>
+            <input type="file" id="pcup_${inv.id}" accept=".xlsx,.xls,.csv" style="display:none"
+              onchange="pcUpload(${inv.id},this)">
+          </label>` : ''}
+        </div>
+
+        <div class="pc-section">
+          <div class="pc-slbl">שעות לפי מתכנן</div>
+          <div class="pc-hours-grid">
+            ${hInputs}
+            <div class="pc-total-box">
+              <div class="pc-total-lbl">סה"כ שעות</div>
+              <div class="pc-total-val" id="pct_${inv.id}">${h||'—'}</div>
+            </div>
+            <div class="pc-amount-box">
+              <div class="pc-amount-lbl">סכום ₪</div>
+              <div class="pc-amount-val" id="pca_${inv.id}">${a>0?'₪'+Math.round(a).toLocaleString('he-IL'):'—'}</div>
+            </div>
+          </div>
+          ${isOpen ? `<textarea class="pc-notes" id="pcn_${inv.id}"
+            placeholder="הערות לדוח — תיאור העבודה, הסברים לשעות, הערות מיוחדות..."
+            >${inv.notes[0]||''}</textarea>` : ''}
+        </div>
+
+        <div class="pc-footer">
+          <div style="font-size:10px;color:var(--txt2)">
+            ${isSent ? '✓ נשלח ללקוח' : isSubmitted&&!isOpen ? 'הוגש — ממתין לאישור' : ''}
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-gh" onclick="openReview(${inv.id})">צפה בפרטים ←</button>
+            ${submitBtn}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('submitCards').innerHTML = cards ||
+    '<div style="text-align:center;padding:40px;color:var(--txt3);font-size:12px">אין פרויקטים להצגה בפילטר זה</div>';
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('pcbody_'+id);
+  const chev = document.getElementById('pcchev_'+id);
+  if(!body) return;
+  const isOpen = body.classList.toggle('open');
+  chev.classList.toggle('open', isOpen);
+}
+
+function pcUpdate(id, n, val) {
+  const inv = INVOICES.find(i=>i.id===id);
+  inv.h[n] = val ? parseFloat(val) : null;
+  const h = th(inv), a = amt(inv);
+  const te = document.getElementById('pct_'+id);
+  const ae = document.getElementById('pca_'+id);
+  if(te) te.textContent = h || '—';
+  if(ae) ae.textContent = a>0 ? '₪'+Math.round(a).toLocaleString('he-IL') : '—';
+}
+
+function pcUpload(id, input) {
+  if(!input.files.length) return;
+  const inv = INVOICES.find(i=>i.id===id);
+  const f = input.files[0];
+  inv.files.push({
+    name: f.name,
+    by: CU.label,
+    date: new Date().toLocaleDateString('he-IL'),
+    note: 'גרסה '+(inv.files.length+1)
+  });
+  toast('📎 '+f.name+' — הועלה לפרויקט '+inv.name, 't-ok');
+  rSubmit();
+}
+
+function pcSubmit(id) {
+  const inv = INVOICES.find(i=>i.id===id);
+  if(th(inv)===0) { toast('הזיני שעות לפני הגשה', 't-err'); return; }
+  const noteEl = document.getElementById('pcn_'+id);
+  if(noteEl) inv.notes[0] = noteEl.value;
+  // Status routing:
+  // status=4 = returned by ofir-as-manager → skip lead, go straight to ofir (status=3)
+  // status=2 = returned by lead → go back to lead (status=1)
+  // status=0 = fresh submission → go to lead (status=1)
+  const wasReturnedByOfirMgr = (inv.status === 4);
+  inv.status = wasReturnedByOfirMgr ? 3 : 1;
+  inv.retNotes = ''; inv.retBy = '';
+  rf();
+  const dest = wasReturnedByOfirMgr ? 'אופיר (לאישור סופי)' : inv.lead.split(' ')[0];
+  toast('✓ '+inv.name+' — הוגש ל'+dest, 't-ok');
+  rSubmit();
+}
+
+// ===== REVIEW PAGE =====
+let reviewInvId = null;
+
+function openReview(id) {
+  reviewInvId = id;
+  const inv = INVOICES.find(i=>i.id===id);
+  if(!inv) return;
+  const proj = PROJECTS.find(p=>p.num===String(inv.num));
+  const h = th(inv), a = amt(inv);
+  const act = getAct(inv);
+  const canRet = canReturn(inv);
+  const ofirLead = ofirIsLead(inv);
+
+  // Status step labels
+  const stepNames = inv.lead.includes('אופיר')
+    ? ['הוגש לאופיר','אישור אופיר (ראש"צ+מנהל)','נשלח ללקוח']
+    : ['הוגש לראש"צ','אישור ראש"צ','אישור אופיר','נשלח ללקוח'];
+
+  // Return banner
+  let retBanner = '';
+  if(inv.retNotes) {
+    retBanner = `<div class="rv-ret-banner">
+      <div class="rv-ret-ico">↺</div>
+      <div class="rv-ret-txt">
+        <div class="rv-ret-by">הוחזר לתיקון ע"י ${inv.retBy}</div>
+        <div class="rv-ret-note">${inv.retNotes}</div>
+      </div>
+    </div>`;
+  }
+
+  // Hours table rows — per planner
+  const plannerNames = ['מתכנן 1','מתכנן 2','מתכנן 3','מתכנן 4'];
+  const hRows = inv.h.map((v,i) => v ? `<tr>
+    <td style="color:var(--txt2)">${plannerNames[i]}</td>
+    <td>${v}</td>
+    <td class="amt">${fmtM(v*(RATES[inv.num]||380))}</td>
+  </tr>` : '').join('');
+
+  // File versions
+  const verHtml = inv.files.length
+    ? inv.files.map((f,i) => `<div class="rv-ver">
+        <div class="rv-vnum">v${i+1}</div>
+        <div class="rv-vinfo">
+          <div class="rv-vname">${f.name}</div>
+          <div class="rv-vdate">${f.date} · ${f.by}</div>
+          ${f.note ? `<div class="rv-vnote">${f.note}</div>` : ''}
+        </div>
+        <div class="rv-vbtns">
+          <button class="btn btn-gh" onclick="dlFile('${f.name}')" style="font-size:9px">⬇ הורד</button>
+        </div>
+      </div>`).join('')
+    : '<div style="font-size:10px;color:var(--txt3);padding:4px 0">לא הועלו קבצים</div>';
+
+  // Notes history
+  const noteLabels = ['כלכלנית','ראש"צ','אופיר'];
+  const noteHist = inv.notes.map((n,i) => n ? `<div class="rv-note-item">
+    <div class="rv-note-by">${noteLabels[i]}</div>
+    <div class="rv-note-txt">${n}</div>
+  </div>` : '').join('');
+
+  // Progress steps
+  const maxStatus = inv.lead.includes('אופיר') ? 5 : 5;
+  const stepsHtml = (inv.lead.includes('אופיר')
+    ? [[1,2],[5],[6]]
+    : [[1,2],[3,4],[3,4,5],[5,6]]
+  ).map((ss,i) => {
+    const lbl = stepNames[i];
+    const done = !ss.includes(inv.status) && inv.status > Math.max(...ss);
+    const active = ss.includes(inv.status);
+    const col = done ? 'var(--acc2)' : active ? 'var(--acc)' : 'var(--txt3)';
+    const mark = done ? '✓' : active ? '●' : '○';
+    return `<div style="flex:1;text-align:center;font-size:10px;color:${col};border-bottom:2px solid ${col};padding-bottom:6px;font-weight:${active?'600':'400'}">${mark} ${lbl}</div>`;
+  }).join('');
+
+  // Action buttons
+  let actionBtns = '';
+  if(act) actionBtns += `<button class="btn ${act.cls}" onclick="doActRv(${id},${act.next})" style="width:100%">${act.lbl}</button>`;
+  if(canRet) actionBtns += `<button class="btn btn-ret" onclick="doReturnRv(${id})" style="width:100%">↺ החזר לתיקון עם הערות</button>`;
+  if(!act && !canRet) actionBtns = `<div style="font-size:10px;color:var(--txt3)">אין פעולות זמינות</div>`;
+
+  // Upload button for economist
+  const uploadBtn = CU.role==='economist' && inv.status < 6
+    ? `<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--sur2);border:1px dashed var(--bdr);border-radius:5px;cursor:pointer;font-size:10px;color:var(--txt2)" for="rvfup">📎 הוסף / עדכן קובץ Excel<input type="file" id="rvfup" accept=".xlsx,.xls,.csv" style="display:none" onchange="addFileRv(${id},this)"></label>`
+    : '';
+
+  // Info hint
+  const ofirLead2 = ofirIsLead(inv);
+  const hints = {
+    0:{economist:'הזן שעות ועלה קובץ Excel, לאחר מכן הגש'},
+    1:{lead:'בדוק את דוח השעות ואשר או החזר לתיקון',manager:ofirLead2?'אתה ראש הצוות — אשר סופית או החזר לתיקון':''},
+    2:{economist:'ראש הצוות החזיר — עדכן את הדוח ועלה גרסה חדשה'},
+    3:{manager:ofirLead2?''  :'אושר ע"י ראש"צ — בדוק ואשר סופית'},
+    4:{economist:'אופיר החזיר — עדכן ועלה גרסה חדשה (תחזיר ישירות לאופיר)'},
+    5:{economist:'מאושר — שלח ללקוח ועדכן סטטוס'},
+  };
+  const hint = hints[inv.status]?.[CU.role] || '';
+
+  const flagHtml = proj ? flag(proj) : '';
+  const remPctVal = proj ? remPct(proj) : 0;
+  const barCls = remPctVal<=20?'pb-danger':remPctVal<=40?'pb-warn':'pb-ok';
+
+  document.getElementById('rv-content').innerHTML = `
+    <div class="rv-hdr">
+      <button class="rv-back" onclick="gp('invoices')">← חזרה לרשימה</button>
+      <div>
+        <div class="rv-title">${inv.name}</div>
+        <div class="rv-sub">#${inv.num} · ${inv.client} · ראש"צ: ${inv.lead.split(' ')[0]}</div>
+      </div>
+      <div style="margin-right:auto">${bdg(inv.status)}</div>
+    </div>
+
+    ${retBanner}
+
+    <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--bdr)">
+      ${stepsHtml}
+    </div>
+
+    <div class="rv-grid">
+      <div style="display:grid;gap:14px;">
+
+        <!-- HOURS TABLE -->
+        <div class="rv-card">
+          <div class="rv-card-hdr">דוח שעות — מרץ 2026</div>
+          <div class="rv-card-body" style="padding:0">
+            <table class="rv-htable">
+              <thead><tr><th>מתכנן</th><th>שעות</th><th>סכום</th></tr></thead>
+              <tbody>
+                ${hRows || '<tr><td colspan="3" style="color:var(--txt3);text-align:center;padding:14px">לא הוזנו שעות</td></tr>'}
+              </tbody>
+              ${h>0 ? `<tfoot><tr class="rv-total"><td>סה"כ</td><td>${h}</td><td>${fmtM(a)}</td></tr></tfoot>` : ''}
+            </table>
+          </div>
+        </div>
+
+        <!-- PROJECT BUDGET -->
+        ${proj ? `<div class="rv-card">
+          <div class="rv-card-hdr">יתרת פרויקט</div>
+          <div class="rv-card-body">
+            <div class="rv-field"><span class="rv-flbl">שכ"ט חוזי</span><span class="rv-fval">${fmtM(proj.contract)}</span></div>
+            <div class="rv-field"><span class="rv-flbl">חויב עד כה</span><span class="rv-fval">${fmtM(proj.billed)}</span></div>
+            <div class="rv-field"><span class="rv-flbl">יתרה נותרת</span><span class="rv-fval amt">${fmtM(remaining(proj))} ${flagHtml}</span></div>
+            <div class="rv-field"><span class="rv-flbl">% ניצול</span><span class="rv-fval">${100-remPctVal}%</span></div>
+            <div class="pb-bg" style="margin-top:8px"><div class="pb-fill ${barCls}" style="width:${Math.min(100-remPctVal,100)}%"></div></div>
+          </div>
+        </div>` : ''}
+
+        <!-- NOTES HISTORY -->
+        ${noteHist ? `<div class="rv-card">
+          <div class="rv-card-hdr">היסטוריית הערות</div>
+          <div class="rv-card-body">${noteHist}</div>
+        </div>` : ''}
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:grid;gap:14px;">
+
+        <!-- FILES -->
+        <div class="rv-card">
+          <div class="rv-card-hdr">קבצי דוח שעות</div>
+          <div class="rv-card-body">
+            ${verHtml}
+            ${uploadBtn}
+          </div>
+        </div>
+
+        <!-- PROJECT INFO -->
+        <div class="rv-card">
+          <div class="rv-card-hdr">פרטי פרויקט</div>
+          <div class="rv-card-body">
+            <div class="rv-field"><span class="rv-flbl">לקוח</span><span class="rv-fval">${inv.client}</span></div>
+            <div class="rv-field"><span class="rv-flbl">ראש צוות</span><span class="rv-fval">${inv.lead}</span></div>
+            <div class="rv-field"><span class="rv-flbl">תעריף שעתי</span><span class="rv-fval mono">₪${RATES[inv.num]||380}/ש׳</span></div>
+            <div class="rv-field"><span class="rv-flbl">חודש חיוב</span><span class="rv-fval">מרץ 2026</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="rv-action-bar" style="margin-top:14px">
+      <textarea id="rvNotes" placeholder="הערות לחשבון זה..." rows="3"></textarea>
+      <div class="rv-action-btns">
+        ${hint ? `<div style="font-size:10px;color:var(--txt2);margin-bottom:4px">💡 ${hint}</div>` : ''}
+        ${actionBtns}
+      </div>
+    </div>
+  `;
+
+  // Show review nav item
+  const navItem = document.getElementById('reviewNav');
+  if(navItem) navItem.style.display='flex';
+
+  // Switch to review page without recursion
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nitem').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-review').classList.add('active');
+  const rn=document.getElementById('reviewNav'); if(rn){rn.style.display='flex';rn.classList.add('active');}
+}
+
+function doActRv(id,next){
+  const inv=INVOICES.find(i=>i.id===id);
+  const note=(document.getElementById('rvNotes')||{}).value||'';
+  if(note){
+    // Economist always saves to notes[0]; lead to notes[1]; manager to notes[2]
+    if(CU.role==='economist') inv.notes[0]=note;
+    else if(CU.role==='lead') inv.notes[1]=note;
+    else inv.notes[2]=note;
+  }
+  inv.status=next; inv.retNotes=''; inv.retBy='';
+  if(next===6) updateRemaining(inv);
+  rf();
+  const msgs={1:'✓ הוגש — ראש"צ יקבל התרעה',3:'✓ אושר ע"י ראש"צ — אופיר יקבל התרעה',5:'✓ אושר סופית — הכלכלנית תקבל התרעה',6:'✓ נשלח ללקוח — יתרה עודכנה'};
+  toast(msgs[next]||'✓ עודכן','t-ok');
+  // Refresh review page
+  if(document.getElementById('page-review').classList.contains('active')) openReview(id);
+}
+
+function doReturnRv(id){
+  const inv=INVOICES.find(i=>i.id===id);
+  const note=(document.getElementById('rvNotes')||{}).value||'';
+  if(!note){ toast('יש להוסיף הערה לפני החזרה לתיקון','t-err'); return; }
+  inv.retNotes=note; inv.retBy=CU.label;
+  if(CU.role==='manager' && inv.status===3 && !ofirIsLead(inv)){
+    inv.status=4;
+  } else {
+    inv.status=2;
+  }
+  rf();
+  toast('↺ הוחזר לכלכלנית עם הערות','t-warn');
+  if(document.getElementById('page-review').classList.contains('active')) openReview(id);
+}
+
+function addFileRv(id,input){
+  if(!input.files.length) return;
+  const inv=INVOICES.find(i=>i.id===id);
+  const f=input.files[0];
+  inv.files.push({name:f.name,by:CU.label,date:new Date().toLocaleDateString('he-IL'),note:'גרסה '+(inv.files.length+1)});
+  toast('📎 '+f.name+' — הועלה','t-ok');
+  openReview(id);
+}
+
+// ===== REFRESH =====
+function rf(){ rDash(); if(document.getElementById('page-invoices').classList.contains('active'))rInv(); }
+
+// ===== INIT =====
+// rDash() will be called by doLogin() after SP data loads
+if(typeof doLogin === 'undefined') rDash();
+</script>
+
+<script>
+// Load MSAL with multiple CDN fallbacks
+(function() {
+  const cdns = [
+    "https://alcdn.msauth.net/browser/3.27.0/js/msal-browser.min.js",
+    "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js",
+    "https://unpkg.com/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"
+  ];
+  let idx = 0;
+  function tryLoad() {
+    if(idx >= cdns.length) {
+      document.getElementById('lmsg').textContent = 'שגיאה: לא ניתן לטעון ספריית אימות. בדוק חיבור אינטרנט.';
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = cdns[idx];
+    s.onload = () => { console.log('MSAL loaded from:', cdns[idx]); doLogin(); };
+    s.onerror = () => { console.warn('Failed CDN:', cdns[idx]); idx++; tryLoad(); };
+    document.head.appendChild(s);
+  }
+  window._startMSAL = tryLoad;
+})();
+</script>
+<script>
+// ===== CONFIG =====
+const SP_CFG = {
+  clientId:  "bcd7cd42-0c64-4213-b071-8a62006dd3ad",
+  tenantId:  "20f1b376-1ab4-4943-872a-3d7b5b7057e9",
+  siteUrl:   "https://netorgft4959724.sharepoint.com/sites/OH",
+  redirectUri: window.location.href.split('?')[0],
+};
+const EMAILS = {
+  'אלון גולדשטיין':'alon@ioa-eng.com',
+  'סיון לב טנא':'sivan@ioa-eng.com',
+  'אופיר הילברט':'ofir@ioa-eng.com',
+  economist:'finance@ioa-eng.com',
+  manager:'ofir@ioa-eng.com',
+};
+const SP_SCOPES = ["https://netorgft4959724.sharepoint.com/.default"];
+const GR_SCOPES = ["Mail.Send","User.Read"];
+let pca, spTok, grTok;
+
+// ===== HELPERS =====
+const lo  = () => document.getElementById('lo');
+const lmsg= (t) => { const e=document.getElementById('lmsg'); if(e) e.textContent=t; };
+const leadEmail = (name) => EMAILS[name] || 'ofir@ioa-eng.com';
+const emailBody = (inv, msg) => {
+  const h=th(inv), a=amt(inv);
+  return `<div dir="rtl" style="font-family:Arial;font-size:14px"><h3>${msg}</h3>
+  <p><b>פרויקט:</b> ${inv.name} (#${inv.num})</p>
+  <p><b>לקוח:</b> ${inv.client} | <b>ראש"צ:</b> ${inv.lead}</p>
+  <p><b>שעות:</b> ${h} | <b>סכום:</b> ₪${Math.round(a).toLocaleString('he-IL')}</p>
+  <p style="color:#888;font-size:11px">הודעה אוטומטית — מערכת חשבונות OH</p></div>`;
+};
+
+// ===== AUTH =====
+async function getToken(scopes) {
+  const account = pca.getAllAccounts()[0];
+  if (!account) throw new Error("לא מחובר");
+  try { return (await pca.acquireTokenSilent({scopes, account})).accessToken; }
+  catch { return (await pca.acquireTokenPopup({scopes})).accessToken; }
+}
+
+// ===== SP REST =====
+async function spGet(list) {
+  const tok = await getToken(SP_SCOPES);
+  // field_1..field_16 are available directly on items without $select
+  const r = await fetch(SP_CFG.siteUrl+"/_api/web/lists/getbytitle('"+list+"')/items?$top=2000&$expand=FieldValuesAsText", {
+    headers:{ Authorization:"Bearer "+tok, Accept:"application/json;odata=nometadata" }
+  });
+  if(!r.ok) throw new Error("spGet "+list+" failed: "+r.status);
+  const data = await r.json();
+  // Return raw items — field_1..field_16 are directly accessible with correct types
+  return data.value||[];
+}
+
+async function spPatch(list, id, body) {
+  const tok = await getToken(SP_SCOPES);
+  await fetch(SP_CFG.siteUrl+"/_api/web/lists/getbytitle('"+list+"')/items("+id+")", {
+    method:"POST",
+    headers:{ Authorization:"Bearer "+tok, "Content-Type":"application/json;odata=nometadata",
+              Accept:"application/json;odata=nometadata", "X-HTTP-Method":"MERGE", "IF-MATCH":"*" },
+    body: JSON.stringify(body)
+  });
+}
+
+async function spPost(list, body) {
+  const tok = await getToken(SP_SCOPES);
+  const r = await fetch(SP_CFG.siteUrl+"/_api/web/lists/getbytitle('"+list+"')/items", {
+    method:"POST",
+    headers:{ Authorization:"Bearer "+tok, "Content-Type":"application/json;odata=nometadata",
+              Accept:"application/json;odata=nometadata" },
+    body: JSON.stringify(body)
+  });
+  return await r.json();
+}
+
+// ===== EMAIL =====
+async function sendEmail(to, subject, html) {
+  try {
+    const tok = await getToken(GR_SCOPES);
+    await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
+      method:"POST",
+      headers:{ Authorization:"Bearer "+tok, "Content-Type":"application/json" },
+      body: JSON.stringify({ message:{
+        subject, body:{contentType:"HTML",content:html},
+        toRecipients:[{emailAddress:{address:to}}]
+      }, saveToSentItems:false })
+    });
+  } catch(e){ console.warn("Email failed:",e); }
+}
+
+// ===== LOAD DATA =====
+async function loadData() {
+  lmsg("טוען פרויקטים...");
+  const projItems = await spGet('OH-Projects');
+  PROJECTS.length=0;
+  projItems.forEach(p=>{
+    // Confirmed field mapping from SharePoint:
+    // Title=ProjectNumber, field_1=ProjectName, field_2=Client, field_3=TeamLead
+    // field_4=HourlyRate, field_5=ContractAmount, field_6=BilledToDate, field_7=ProjectStatus
+    const num = String(p.Title||p.ProjectNumber||'');
+    const name = p.field_1||p.ProjectName||'';
+    const client = p.field_2||p.Client||'';
+    const lead = p.field_3||p.TeamLead||'';
+    const rate = parseFloat(p.field_4||p.HourlyRate)||380;
+    const contract = parseFloat(p.field_5||p.ContractAmount)||0;
+    const billed = parseFloat(p.field_6||p.BilledToDate)||0;
+    const pst = p.field_7||p.ProjectStatus||'חי - פעיל';
+    PROJECTS.push({
+      num, name, client, lead, contract, billed,
+      avg: Math.round(contract/12),
+      pst, contractHours: 0, _id: p.Id
+    });
+    if(num) RATES[parseInt(num)] = rate;
+  });
+
+  if(projItems.length>0) console.log('SP_PROJECT_FIELDS:', Object.keys(projItems[0]).join(','));
+  if(projItems.length>0) console.log('SP_PROJECT_DATA:', JSON.stringify(projItems[0]));
+  lmsg("טוען חשבונות...");
+  const invItems = await spGet('OH-MonthlyInvoices');
+  INVOICES.length=0;
+  const curMonth = new Date().toISOString().slice(0,7);
+  if(invItems.length>0) console.log('SP_INVOICE_FIELDS:', Object.keys(invItems[0]).join(','));
+  if(invItems.length>0) console.log('SP_INVOICE_DATA:', JSON.stringify(invItems[0]));
+  const list = invItems;
+  const sMap={'ממתין לדוח שעות':0,'ממתין לאישור ראש"צ':1,'הוחזר לתיקון ע"י ראש"צ':2,'אושר ראש"צ — ממתין לאופיר':3,'הוחזר לתיקון ע"י אופיר':4,'אושר סופית — לשליחה':5,'נשלח ללקוח':6};
+  list.forEach((i,idx)=>{
+    let files=[];
+    try{ if(i.FilesJson) files=JSON.parse(i.FilesJson); }catch(e){}
+    // files from FilesJson or field_16 (handled below)
+    // field_1=Name, field_2=Client, field_3=Lead, field_4=BillingMonth
+    // field_5=P1H, field_6=P2H, field_7=P3H, field_8=P4H
+    // field_11=Status, field_12=EconNotes, field_13=LeadNotes, field_14=MgrNotes
+    // field_15=ReturnNotes, field_16=AttachedFile
+    const statusText = i.field_11||i.InvoiceStatus||'ממתין לדוח שעות';
+    let invFiles = files;
+    if(!invFiles.length && i.field_16) invFiles=[{name:i.field_16,by:'',date:'',note:''}];
+    INVOICES.push({
+      id:idx+1, _id:i.Id,
+      num:parseInt(i.Title||i.ProjectNumber)||0,
+      name:i.field_1||i.ProjectName||'',
+      client:i.field_2||i.Client||'',
+      lead:i.field_3||i.TeamLead||'',
+      h:[i.field_5!=null?parseFloat(i.field_5)||null:null,
+         i.field_6!=null?parseFloat(i.field_6)||null:null,
+         i.field_7!=null?parseFloat(i.field_7)||null:null,
+         i.field_8!=null?parseFloat(i.field_8)||null:null],
+      status:sMap[statusText]??0,
+      notes:[i.field_12||'', i.field_13||'', i.field_14||'', ''],
+      files:invFiles,
+      retNotes:i.field_15||'',
+      retBy:i.ReturnBy||'',
+    });
+  });
+}
+
+// ===== SYNC BACK =====
+async function syncInv(inv) {
+  if(!inv._id) return;
+  const sl=['ממתין לדוח שעות','ממתין לאישור ראש"צ','הוחזר לתיקון ע"י ראש"צ','אושר ראש"צ — ממתין לאופיר','הוחזר לתיקון ע"י אופיר','אושר סופית — לשליחה','נשלח ללקוח'];
+  try { await spPatch('OH-MonthlyInvoices', inv._id, {
+    field_11:sl[inv.status]||'',
+    field_5:inv.h[0]||null, field_6:inv.h[1]||null,
+    field_7:inv.h[2]||null, field_8:inv.h[3]||null,
+    field_9:th(inv)||null, field_10:amt(inv)||null,
+    field_12:inv.notes[0]||'', field_13:inv.notes[1]||'',
+    field_14:inv.notes[2]||'', field_15:inv.retNotes||'',
+    ReturnBy:inv.retBy||'', FilesJson:JSON.stringify(inv.files),
+  }); } catch(e){ console.warn("syncInv failed:",e); }
+}
+
+async function syncProj(inv) {
+  const p = PROJECTS.find(pr=>pr.num===String(inv.num));
+  if(!p||!p._id) return;
+  try { await spPatch('OH-Projects', p._id, {field_6:p.billed}); }
+  catch(e){ console.warn("syncProj failed:",e); }
+}
+
+// ===== WRAP ACTION FUNCTIONS =====
+// These run AFTER doAct/doReturn are defined by the app script above
+function wrapActions() {
+  const orig_doAct = doAct;
+  window.doAct = function(id, next) {
+    orig_doAct(id, next);
+    const inv = INVOICES.find(i=>i.id===id);
+    if(!inv) return;
+    syncInv(inv).catch(console.warn);
+    if(next===1) sendEmail(leadEmail(inv.lead),'נדרש אישורך — '+inv.name,emailBody(inv,'הכלכלנית הגישה דוח שעות'));
+    if(next===3) sendEmail(EMAILS.manager,'לאישור סופי — '+inv.name,emailBody(inv,'ראש הצוות אישר'));
+    if(next===5) sendEmail(EMAILS.economist,'מאושר לשליחה — '+inv.name,emailBody(inv,'החשבון אושר סופית'));
+    if(next===6){ syncProj(inv).catch(console.warn); sendEmail(EMAILS.manager,'נשלח ללקוח — '+inv.name,emailBody(inv,'החשבון נשלח ללקוח')); }
+  };
+
+  const orig_doReturn = doReturn;
+  window.doReturn = function(id) {
+    orig_doReturn(id);
+    const inv = INVOICES.find(i=>i.id===id);
+    if(!inv) return;
+    syncInv(inv).catch(console.warn);
+    sendEmail(EMAILS.economist,'הוחזר לתיקון — '+inv.name,emailBody(inv,'הדוח הוחזר לתיקון ע"י '+CU.label)).catch(console.warn);
+  };
+
+  const orig_doActRv = window.doActRv;
+  if(orig_doActRv) window.doActRv = function(id,next){ orig_doActRv(id,next); };
+
+  const orig_doReturnRv = window.doReturnRv;
+  if(orig_doReturnRv) window.doReturnRv = function(id){ orig_doReturnRv(id); };
+
+  const orig_pcUpload = window.pcUpload;
+  if(orig_pcUpload) window.pcUpload = async function(id, input) {
+    orig_pcUpload(id, input);
+    if(!input.files.length) return;
+    const inv = INVOICES.find(i=>i.id===id);
+    if(!inv) return;
+    try {
+      const tok = await getToken(SP_SCOPES);
+      const folder = "/sites/OH/OH-Billing-Files/"+inv.num;
+      const file = input.files[0];
+      const buf = await file.arrayBuffer();
+      await fetch(SP_CFG.siteUrl+"/_api/web/GetFolderByServerRelativeUrl('"+folder+"')/Files/add(url='"+encodeURIComponent(file.name)+"',overwrite=true)", {
+        method:"POST", headers:{Authorization:"Bearer "+tok}, body:buf
+      });
+      await syncInv(inv);
+      toast('📎 הועלה ל-SharePoint','t-ok');
+    } catch(e){ console.warn("Upload failed:",e); }
+  };
+}
+
+// ===== LOGIN =====
+async function doLogin() {
+  lo().style.display='flex';
+  try {
+    pca = new msal.PublicClientApplication({
+      auth:{ clientId:SP_CFG.clientId, authority:"https://login.microsoftonline.com/"+SP_CFG.tenantId, redirectUri:SP_CFG.redirectUri },
+      cache:{ cacheLocation:"sessionStorage" }
+    });
+    await pca.initialize();
+    await pca.handleRedirectPromise();
+    let account = pca.getAllAccounts()[0];
+    if(!account){
+      lmsg("מתחבר ל-Microsoft 365...");
+      const r = await pca.loginPopup({scopes:["User.Read"]});
+      account = r.account;
+    }
+    // Set user display
+    document.getElementById('ulbl').textContent = account.name || account.username;
+    // Load role from OH-Users
+    lmsg("טוען הרשאות...");
+    try {
+      const users = await spGet('OH-Users');
+      const u = users.find(u=>(u.Email||'').toLowerCase()===account.username.toLowerCase());
+      if(u){
+        const roleMap={OfficeManager:'manager',Economist:'economist',TeamLead:'lead'};
+        const role = roleMap[u.Role]||'economist';
+        const match = USERS.find(us=>us.role===role&&(role!=='lead'||u.DisplayName?.includes(us.label.split(' ')[0])));
+        if(match){ uIdx=USERS.indexOf(match); CU=match; }
+        document.getElementById('ulbl').textContent = u.DisplayName||account.name;
+        document.getElementById('udot').style.background = CU.color;
+      }
+    } catch(e){ console.warn("Role load failed:",e); }
+    // Load SharePoint data
+    await loadData();
+    wrapActions();
+    lo().style.display='none';
+    console.log('Loaded projects:', PROJECTS.length, 'invoices:', INVOICES.length);
+    rDash();
+  } catch(e){
+    lmsg("שגיאת התחברות: "+e.message);
+    console.error(e);
+  }
+}
+
+// Remove the cycleUser-based user button — replaced by logout
+document.addEventListener('DOMContentLoaded', ()=>{
+  window._startMSAL();
+  // Override user button to logout
+  const btn = document.getElementById('userBtn')||document.querySelector('.usr-btn');
+  if(btn) btn.onclick = ()=>{ if(pca) pca.logoutPopup(); };
+});
+</script>
+</body>
