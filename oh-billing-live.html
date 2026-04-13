@@ -332,6 +332,7 @@ input[type=file]{display:none;}
   <div class="slbl" style="margin-top:8px">נתונים</div>
   <div class="nitem" onclick="gp('projects')"><span class="nico">◎</span>פרויקטים</div>
   <div class="nitem" onclick="gp('flow')"><span class="nico">→</span>תהליך אישור</div>
+  <div class="nitem" onclick="gp('guide')"><span class="nico">?</span>מדריך</div>
   <div class="nitem" onclick="gp('manage')" id="manageNav"><span class="nico">✦</span>ניהול פרויקטים</div>
   <div class="nitem" id="reviewNav" style="display:none" onclick="gp('review')"><span class="nico">◉</span><span id="reviewNavTxt">סקירת חשבון</span></div>
 </nav>
@@ -388,6 +389,144 @@ input[type=file]{display:none;}
   <div id="submitCards"></div>
 </div>
 
+
+
+<!-- PROJECTS PAGE -->
+<div class="page" id="page-projects">
+  <div class="sh">
+    <div class="stitle">פרויקטים — מעקב יתרות</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn fb active" onclick="setProjFil(this,'all')">הכל</button>
+      <button class="btn fb" onclick="setProjFil(this,'חי - פעיל')">פעילים</button>
+      <button class="btn fb" onclick="setProjFil(this,'דגל')">בסיכון</button>
+      <button class="btn fb" onclick="setProjFil(this,'מוקפא')">מוקפאים</button>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr>
+      <th>פרויקט</th><th>לקוח</th><th>ראש"צ</th>
+      <th>שכ"ט חוזי</th><th>חויב</th><th>יתרה</th>
+      <th>% נותר</th><th>ממוצע חודשי</th><th>דגל</th>
+    </tr></thead>
+    <tbody id="ptb"></tbody>
+  </table></div>
+</div>
+
+<!-- FLOW PAGE -->
+<div class="page" id="page-flow">
+  <div class="sh"><div class="stitle">תהליך האישור</div></div>
+  <div style="padding:16px;max-width:800px;margin:0 auto">
+
+    <!-- Flow diagram -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <!-- Step 0 -->
+      <div style="background:var(--sur2);border-radius:8px;padding:14px 18px;border-right:4px solid var(--acc)">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:4px">שלב 0</div>
+        <div style="font-weight:600;color:var(--txt1);margin-bottom:4px">כלכלנית — הכנת דוח שעות</div>
+        <div style="font-size:10px;color:var(--txt2)">מעלה קובץ Excel → מזינה שעות לפי מתכנן → מגישה לאישור ראש"צ</div>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <span class="status st4" style="font-size:9px">ממתין לדוח שעות → ממתין לאישור ראש"צ</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:20px;color:var(--acc)">↓</div>
+
+      <!-- Step 1 -->
+      <div style="background:var(--sur2);border-radius:8px;padding:14px 18px;border-right:4px solid #38bdf8">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:4px">שלב 1</div>
+        <div style="font-weight:600;color:var(--txt1);margin-bottom:4px">ראש הצוות — בדיקה ואישור</div>
+        <div style="font-size:10px;color:var(--txt2)">בודק דוח שעות וקובץ Excel → מאשר או מחזיר לתיקון</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="status st3" style="font-size:9px">✓ אישר → אושר ראש"צ — ממתין לאופיר</span>
+          <span class="status st5" style="font-size:9px">↺ החזיר → הוחזר לתיקון ע"י ראש"צ</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="flex:1;text-align:center;font-size:20px;color:var(--acc)">↓</div>
+        <div style="font-size:10px;color:var(--red);flex:1;text-align:center">↺ חזרה לכלכלנית לתיקון</div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="background:var(--sur2);border-radius:8px;padding:14px 18px;border-right:4px solid var(--acc2)">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:4px">שלב 2</div>
+        <div style="font-weight:600;color:var(--txt1);margin-bottom:4px">אופיר — אישור סופי</div>
+        <div style="font-size:10px;color:var(--txt2)">בודק ומאשר סופית, או מחזיר לכלכלנית לתיקון (ישירות אליו)</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="status st3" style="font-size:9px;background:#0a2b1a;color:var(--acc2)">✓ אישר → אושר סופית — לשליחה</span>
+          <span class="status st5" style="font-size:9px">↺ החזיר → הוחזר לתיקון ע"י אופיר</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:20px;color:var(--acc2)">↓</div>
+
+      <!-- Step 3 -->
+      <div style="background:var(--sur2);border-radius:8px;padding:14px 18px;border-right:4px solid #94a3b8">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:4px">שלב 3</div>
+        <div style="font-weight:600;color:var(--txt1);margin-bottom:4px">כלכלנית — שליחה ללקוח</div>
+        <div style="font-size:10px;color:var(--txt2)">שולחת דוח + חשבון ללקוח → מסמנת "נשלח" במערכת → יתרת הפרויקט מתעדכנת אוטומטית</div>
+        <div style="margin-top:8px">
+          <span class="status st4" style="font-size:9px;background:#1a1f2b;color:#94a3b8">נשלח ללקוח ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shortcut note -->
+    <div style="margin-top:16px;background:#091a10;border-radius:8px;padding:12px 16px;border:1px solid var(--acc2)">
+      <div style="font-weight:600;color:var(--acc2);margin-bottom:4px;font-size:11px">מסלול קיצור — אופיר כראש צוות</div>
+      <div style="font-size:10px;color:var(--txt2)">כשאופיר הוא ראש הצוות של הפרויקט — אישורו מחליף גם את שלב ראש"צ וגם את שלב המנהל. החשבון עובר ישירות לסטטוס "אושר סופית".</div>
+    </div>
+
+    <!-- Status legend -->
+    <div style="margin-top:16px">
+      <div style="font-weight:600;color:var(--txt1);margin-bottom:8px;font-size:12px">סטטוסי חשבון:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st0" style="font-size:9px">ממתין לדוח שעות</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st1" style="font-size:9px">ממתין לאישור ראש"צ</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st5" style="font-size:9px">הוחזר לתיקון ע"י ראש"צ</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st2" style="font-size:9px">אושר ראש"צ — ממתין לאופיר</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st5" style="font-size:9px;background:#1a0810;color:var(--red)">הוחזר לתיקון ע"י אופיר</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st3" style="font-size:9px">אושר סופית — לשליחה</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="status st4" style="font-size:9px;background:#1a1f2b;color:#94a3b8">נשלח ללקוח</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GUIDE PAGE -->
+<div class="page" id="page-guide">
+  <div class="sh"><div class="stitle">מדריך למשתמש</div></div>
+  <div style="padding:24px;max-width:600px;margin:0 auto;text-align:right">
+    <div style="background:var(--sur2);border-radius:12px;padding:24px;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:var(--txt1);margin-bottom:8px">מדריך מלא — PDF</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:16px">המדריך כולל הסבר מפורט לכל תפקיד, סכמת תהליך האישור, ושאלות נפוצות.</div>
+      <a href="https://ofir98.github.io/oh-billing/OH_User_Guide.pdf" target="_blank"
+         style="display:inline-block;background:var(--acc);color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;font-size:11px">
+        ⬇ הורד מדריך PDF
+      </a>
+    </div>
+
+    <div style="background:var(--sur2);border-radius:12px;padding:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--txt1);margin-bottom:12px">סיכום מהיר לפי תפקיד</div>
+
+      <div style="margin-bottom:12px;padding:12px;background:var(--sur);border-radius:8px;border-right:3px solid #a78bfa">
+        <div style="font-weight:600;color:#a78bfa;margin-bottom:4px">כלכלנית</div>
+        <div style="font-size:10px;color:var(--txt2)">מגישה דוחות שעות → מתקנת לפי הערות → שולחת ללקוח אחרי אישור סופי</div>
+      </div>
+
+      <div style="margin-bottom:12px;padding:12px;background:var(--sur);border-radius:8px;border-right:3px solid #38bdf8">
+        <div style="font-weight:600;color:#38bdf8;margin-bottom:4px">ראש הצוות (אלון / סיון)</div>
+        <div style="font-size:10px;color:var(--txt2)">מקבל התרעה → בודק דוח שעות → מאשר או מחזיר לתיקון</div>
+      </div>
+
+      <div style="padding:12px;background:var(--sur);border-radius:8px;border-right:3px solid var(--acc2)">
+        <div style="font-weight:600;color:var(--acc2);margin-bottom:4px">אופיר — מנהל משרד</div>
+        <div style="font-size:10px;color:var(--txt2)">אישור סופי לכל החשבונות + ראש צוות לפרויקטים שלו + ניהול פרויקטים</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MANAGE PROJECTS -->
 <div class="page" id="page-manage">
@@ -770,6 +909,13 @@ function rSubmit(){
 }
 
 // ===== RENDER PROJECTS =====
+function setProjFil(el, fil) {
+  projFil = fil;
+  document.querySelectorAll('#page-projects .fb').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  rProj();
+}
+
 function rProj(){
   let data = projFil==='all'?PROJECTS:projFil==='דגל'?PROJECTS.filter(p=>remPct(p)<=40):PROJECTS.filter(p=>p.pst===projFil);
   document.getElementById('ptb').innerHTML=data.map(p=>{
@@ -953,6 +1099,8 @@ function gp(name){
   if(name==='invoices')rInv();
   if(name==='submit'){submitFilter='all';rSubmit();}
   if(name==='projects')rProj();
+  if(name==='flow'){}
+  if(name==='guide'){}
   if(name==='manage'){if(CU.role==='manager'||CU.role==='economist')rManage();else{toast('גישה לאופיר ולכלכלנית בלבד','t-err');return;}}
   // review page content already rendered by openReview() — no re-call needed
 }
